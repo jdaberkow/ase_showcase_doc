@@ -13,10 +13,25 @@
 \subsection{Anfahren des Balls} %TODO: Julian E.
 
 \subsection{Lokalisation des gegnerischen Tores} %TODO: Timo M.
+- Rotation um eigene Achse zur Lokalisation des Tores
+- Lokalisation Anhand von Blobb-Detektion 
+- Wenn ein einzelner Pfosten im Bild vorhanden ist - bereits gedrehten Winkel + zusätlichen Winkel vom Mittelpunkt des Bildes zum Pfosten speichern
+- Wenn beide Pfosten im Bild vorhanden sind - bereits gedrehten Winkel + zusätlichen Winkel vom Mittelpunkt des Bildes zum Tormittelpunkt speichern und Rotation beenden
+- Drehung zum Ball durchführen, um diesen wieder vor sich zu haben
 
 \subsection{Schussposition anfahren} %TODO: Timo M.
+- Je nach Winkel zum Tor entscheiden, ob der Ball links- oder rechtsseitig umfahren werden soll
+- 90$^\circ$ Drehung zu der gegebenen Seite 
+- Umfahren des Balles bis vorher berechneter Winkel zum Tor erreicht ist
+	- Bei einem Hindernis wird das Umfahren des Balles gestoppt
+- 90$^\circ$ Drehung zum Ball
+- Überprüfung, ob sowohl Ball als auch das Tor im Bild zu sehen ist 
+	- Ist dies der Fall -> feinjustierung der Schussposition 
 
 \subsection{Schießen} %TODO: Timo M.
+- Überprüfen der seitlichen vorderen Abstandssensoren ob eine Wand detektiert wird
+	- Sollte eine Wand auf einer Seite detektiert werden -> Angedrehter Schuss mit Drehung des AMiRos weg von der Wand
+- Schießen des Balles durch kurzes Ansteuern beider Motoren 
 
 \subsection{Beiseite Fahren} %TODO: Julian E. (Besseren Titel suchen^^)
 
