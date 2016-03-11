@@ -6,5 +6,19 @@
 
 \section{Andocken an die Ladestation} %TODO: Timo M.
 
+- Ausgangssituation: AMiRo steht vorwärts in der Ladestation
+- 180$^\circ$ Drehung anhand der Odometrie um die Ladepins zur Station zu richten
+- Justierung der Position anhand der Abstandssensoren und der schwarzen Streifen
+- Abschalten der PWM und Überwachung, ob sich die Position ändert 
+	- Mögliche Fehlerquellen für Positionsänderung: 
+		- AMiRo wird durch den Einfluss des Magnetfeldes auf die Schraube gedreht, da die Position noch nicht gut genug justiert ist
+		- AMiRo wird durch die Federung der Ladepins von der Station abgestoßen, da die Schraube nicht genau vor dem Magneten war und somit die magnetische Kraft nicht groß genug war 
 
-Lorem ipsum...
+\section{Ansteuern und Überwachen des Ladevorgangs} %TODO: Timo M.
+- Aktivieren des DiWheelDrive-Board Ladepfades (+ kurzes Abwarten)
+- Kontrolle, ob mehr als 9V anliegen (wenn nicht -> Position erneut justieren)
+- Überwachen des Ladevorgangs
+	- Auslesen der Ladestatus der Akkus (\% und Zeit bis geladen)
+	- Überwachen der Odometrie 
+		- falls sich der AMiRo aufgrund von äußeren Einwirkungen bewegen sollte -> Abbruch des Ladevorgangs und Position erneut justieren
+
