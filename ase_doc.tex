@@ -5,7 +5,7 @@
 	headsepline,
 	cleardoublepage=empty,
 	numbers=noenddot,
-	bibliography=totoc,
+%	bibliography=totoc,
 ]{scrbook}
 
 \usepackage{ks}
@@ -20,6 +20,13 @@
 \renewcommand{\thesisType}{Projektbericht}
 \renewcommand{\thesisCourse}{Autonomous Systems Engineering}
 \renewcommand{\thesisSupervisor}{M.Sc.~Timo~Korthals\\M.Sc.~Thomas~Schöpping}
+
+\makeatletter
+\newcommand{\sectionauthor}[1]{%
+	{\vspace{-35pt}\hfill\scshape#1}\\
+	\@afterheading%
+}
+\makeatother
 
 % hyphenation
 \hyphenation{
@@ -55,7 +62,7 @@ Pro-zes-sor-e-le-men-tes
 %\bibliographystyle{alpha}
 %\bibliographystyle{geralpha} % benoetigt packet bibgerm
 %\bibliography{literatur}
-\printbibliography
+%\printbibliography
 
 \include{chapters/anhang}
 
@@ -80,4 +87,16 @@ Pro-zes-sor-e-le-men-tes
 %
 %\thesisAuthor
 
+\begin{thebibliography}{9}
+	\bibitem[Brooks86]{Brooks:1986}
+	Rodney A. Brooks, IEEE Journal Of Robotics And Automation, Volume RA-2 No.1 (March 1986).
+	\newblock A Robust Layered Control System For A Mobile Robot
+	
+	\bibitem[Sicil07]{Siciliano:2007}
+	Bruno Siciliano and Oussama Khatib. 2007. Chapter 8.3.1, Springer-Verlag New York, Inc., Secaucus, NJ, USA.
+	\newblock Springer Handbook of Robotics
+	
+	
+\end{thebibliography}
 \end{document}
+

@@ -1,7 +1,99 @@
 \chapter{Anhang}
 
 \section{Spread Konfiguration}
+\label{sec:spread-config}
+
+AMiRo Kommunikation mit anderen AMiRos / Host:\\
+(File=spreadShowcase.conf)
+
+\lstset{language=bash}
+\begin{lstlisting}
+Spread_Segment  10.0.0.255:4803 {
+	# amiro27
+	stick1          10.0.0.201
+}
+
+Spread_Segment 10.0.0.255:4803 {
+	# amiro23    
+	stick0          10.0.0.202
+}
+
+Spread_Segment  10.0.0.255:4803 {
+	lagomera        10.0.0.200
+}
+\end{lstlisting}
+
+Interprozesskommunikation AMiRo:\\
+(File=spreadShowcaseAMiRoInternal.conf)
+
+\begin{lstlisting}
+Spread_Segment  127.0.0.255:4806 {
+	localhost               127.0.0.1
+}
+\end{lstlisting}
+
 
 \section{RSB Konfiguration}
+\label{sec:rsb-config}
+AMiRo RSB Konfiguration\\
+(File=rsb.conf)
+
+\begin{lstlisting}
+[plugins.cpp]
+load = rsbspread
+[transport.inprocess]
+enabled = 0
+[transport.socket]
+enabled = 0
+[transport.spread]
+enabled = 1
+host = 127.0.0.1
+port    = 4806
+\end{lstlisting}
+
 
 \section{W-LAN Konfiguration}
+\label{sec:wlan-config}
+ASUS Router Konfiguration:\\
+SSID: aseshowcase\\
+PASS: aseshowcase\\
+
+IP Adressen:\\
+lagomera 10.0.0.200\\
+stick1 10.0.0.201\\
+stick0 10.0.0.202\\
+
+Allgemeine Konfiguration des Connman Netzwerkmanagers:\\
+/var/lib/connman/<SSID>-psk.config
+\begin{lstlisting}
+[service_wifi_<hash>_managed_psk]
+Type = wifi
+Name = <SSID>
+Passphrase = <passphrase>
+\end{lstlisting}
+
+Spezifische Konfigurationen der beiden AMiRos:\\
+/var/lib/connman/aseshowcase-psk.config
+
+stick1:
+\begin{lstlisting}
+[service_wifi_wifi_74da380645e3_61736573686f77636173655f3547_managed_psk]
+Type = wifi
+Name = aseshowcase
+Passphrase = aseshowcase
+Hidden = false
+IPv4 = dhcp
+IPv6 = off
+\end{lstlisting}
+
+stick0:
+\begin{lstlisting}
+[service_wifi_wifi_74da380645f6_61736573686f77636173655f3547_managed_psk]
+Type = wifi
+Name = aseshowcase
+Passphrase = aseshowcase
+Hidden = false
+IPv4 = dhcp
+IPv6 = off
+\end{lstlisting}
+
