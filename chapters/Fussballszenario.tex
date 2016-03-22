@@ -12,6 +12,7 @@ Zusätzlich besteht die Möglichkeit für die AMiRos mit dem Host-PC zu kommuniz
 \vfill
 
 \subsection{Kommunikation per RSB und Spread} %TODO: Hendrik
+\sectionauthor{H.O.}
 Damit die AMiRos untereinander kommunizieren können, wurde eine Publish-Subscribe Architektur basierend auf der RSB Middleware aufgesetzt und anstatt einer einfachen Socket-Transport Lösung wurde auf das etwas komplexere Spread Toolkit zurückgegriffen (siehe RSB Konfigurationsdatei im Anhang \ref{sec:rsb-config}).\\
 Die Publish-Subscribe Architektur bietet den Vorteil der asynchronen Kommunikation, die im Zusammenspiel mit einer State-Machine besonders praktisch ist. Die State-Machine muss nicht auf explizit auf Antworten warten, sondern kann beliebig weiterlaufen und reagiert erst dann, wenn eine Nachricht empfangen wurde. Zudem bietet sie den Vorteil das sehr leicht Software-Komponenten hinzugefügt und an die bestehende Kommunikation angeschlossen werden können (vgl.\cite{Siciliano:2007}).\\
 Jeder AMiRo (und auch der Host-PC) hat also eine bestimmte Anzahl an Empfängern (Listener) und Sendern (Publisher) um Nachrichten in bestimmten Geltungsbereichen (Scopes) zu empfangen oder zu senden. Als Nachrichten werden der Einfachheit halber einfache Strings versendet, die dann beim Empfänger geparst werden können. Das Debugging während der Entwicklung wurde so vereinfacht, allerdings hat dieser Ansatz auch Nachteile: Zum einen müssen die Listen an Strings auf Empfänger und Senderseite immer gepflegt werden, damit sie identisch sind und ein zuverlässiges Parsen erlauben. Zum anderen bieten gekapselte Nachrichten mehr Typensicherheit und ggf. auch die Option zusammengehörige Informationen zu kapseln. Im Umfang des Projekt war die Wahl lediglich einfach Strings zu übertragen durchaus ausreichend, die Lösung skaliert aber nicht für größere Projekte.\\
@@ -28,6 +29,7 @@ Die W-LAN Verbindung wurde durch einen eigenen Router realisiert und erlaubt so 
 \end{figure}
 
 \subsection{Finite-State-Machine} %TODO: Hendrik
+\sectionauthor{H.O.}
 Die State-Machine regelt das Verhalten der einzelnen AMiRos. Jedes Verhalten wird in kleinstmögliche Einheiten unterteilt, die dann einzeln angesprochen und überall wiederverwendet werden können. Nach der Initialisierung aller RSB-Komponenten und Variablen wird im Programm die State-Machine gestartet.\\ 
 Solange kein Fehler auftritt, bleibt das Programm immer innerhalb der State-Machine und wechselt den aktuellen Zustand nur auf Grund externer Nachrichten, die in Form von RSB Events oder CAN Messages eingehen können. Extern beschreibt also in diesem Zusammenhang sowohl die anderen Programmkomponenten die auf dem AMiRo laufen, als auch RSB Events von einem anderen AMiRo oder dem Host-PC und CAN Nachrichten vom Mikrocontroller.\\
 Einzelne Zustände haben auch direkte Anweisungen die den aktuellen Zustand wechseln können, dies soll eine Kapselung der einzelnen Verhaltenseinheiten unterstützen und erlaubt es zukünftige Änderungen oder Erweiterungen leichter durchführen zu können.\\
@@ -42,7 +44,8 @@ Nachdem der Ball vom Roboter geschossen wurde, muss zunächst auf eine Bestätig
 Auch das Ladeverhalten wird aus State-Machine Sicht in mehrere Schritte unterteilt und erlaubt so eine gewisse Flexibilität. Gestartet wird das Ladeverhalten durch den \texttt{moveToEdge} State, der den Roboter aus dem Spielgeschehen heraus lenken soll, bis er die nächste Kante gefunden hat. Ist er dort angekommen wechselt er in den \texttt{waitingAtEdge} Zustand. Je nach dem ob die Ladestation gerade frei ist, kann die FSM dann direkt in den nächsten Zustand übergehen oder muss dort solange warten, bis die Ladestation frei wird. Im \texttt{moveToCharging} Zustand startet der AMiRo eine Kantenverfolgung und versucht dann an Hand bestimmter Merkmale die Ladestation zu lokalisieren, indem er entsprechende RSB Events an die SearchCharging Anwendung sendet. Ist er an der Ladestation angekommen, wechselt die State-Machine in den \texttt{moveIntoStation} State und kommuniziert dann über CAN Nachrichten mit den Mirkocontroller Schnittstellen. Wird so ein erfolgreiches Andocken zurückgemeldet, wird dann (ebenfalls über CAN) das eigentliche Laden gestartet. Der Roboter lädt dann in der Regel vollständig auf, es sei denn er empfängt zwischendurch Notrufsignale von einem anderen AMiRo der einen kritischen Ladezustand erreicht hat. 
 
 \subsection{Ladestrategie} %TODO: Hendrik
-Während des Szenarios ist für die Roboter wichtig ihren eigenen Ladezustand zu überwachen und beim Überschreiten gewisser Grenzwerte ein bestimmtes Verhalten auszulösen. Der aktuelle Ladezustand kann wird bei jedem Durchlauf der FSM über den CAN Bus abgefragt und überprüft. Die genaue Ladestrategie wird in Abb. \ref{fig:charging-strategy} verdeutlicht. Fällt die Ladekapazität unter 10\%  wird zunächst überprüft, ob wie der Ladezustand des anderen AMiRos aktuell ist. Liegt dieser ebenfalls unter 15\% wird das Ladeverhalten gestartet. Fällt die eigene Ladekapazität unter 5\% wird das Ladeverhalten ebenfalls ausgelöst. Wird dann eine weitere Grenze von 2\% unterschritten, wird zusätzlich eine Art Notrufsignal vom AMiRo gesendet, dass einen anderen Roboter der gerade die Ladestation blockiert, aber schon ein bestimmtes Ladelevel erreicht hat dazu anhält seinen Ladevorgang abzubrechen und die Ladestation frei zu machen.
+\sectionauthor{H.O.}
+Während des Szenarios ist es für die Roboter wichtig, ihren eigenen Ladezustand zu überwachen und beim Überschreiten gewisser Grenzwerte ein bestimmtes Verhalten auszulösen. Der aktuelle Ladezustand kann wird bei jedem Durchlauf der FSM über den CAN Bus abgefragt und überprüft. Die genaue Ladestrategie wird in Abb. \ref{fig:charging-strategy} verdeutlicht. Fällt die Ladekapazität unter 10\%  wird zunächst überprüft, ob wie der Ladezustand des anderen AMiRos aktuell ist. Liegt dieser ebenfalls unter 15\% wird das Ladeverhalten gestartet. Fällt die eigene Ladekapazität unter 5\% wird das Ladeverhalten ebenfalls ausgelöst. Wird dann eine weitere Grenze von 2\% unterschritten, wird zusätzlich eine Art Notrufsignal vom AMiRo gesendet, dass einen anderen Roboter der gerade die Ladestation blockiert, aber schon ein bestimmtes Ladelevel erreicht hat dazu anhält seinen Ladevorgang abzubrechen und die Ladestation frei zu machen.
 
 \begin{figure}[H]
 	\begin{center}
@@ -62,10 +65,13 @@ Während des Szenarios ist für die Roboter wichtig ihren eigenen Ladezustand zu
 \section{Realisierung der einzelnen Spielelemente} %TODO: Besseren Sectiontitel
 
 \subsection{Lokalisation des Balls} %TODO: Julian E.
+\sectionauthor{J.E.}
 
 \subsection{Anfahren des Balls} %TODO: Julian E.
+\sectionauthor{J.E.}
 
 \subsection{Lokalisation des gegnerischen Tores} %TODO: Timo M.
+\sectionauthor{T.M.}
 - Rotation um eigene Achse zur Lokalisation des Tores
 - Lokalisation Anhand von Blobb-Detektion 
 - Wenn ein einzelner Pfosten im Bild vorhanden ist - bereits gedrehten Winkel + zusätlichen Winkel vom Mittelpunkt des Bildes zum Pfosten speichern
@@ -73,6 +79,7 @@ Während des Szenarios ist für die Roboter wichtig ihren eigenen Ladezustand zu
 - Drehung zum Ball durchführen, um diesen wieder vor sich zu haben
 
 \subsection{Schussposition anfahren} %TODO: Timo M.
+\sectionauthor{T.M.}
 - Je nach Winkel zum Tor entscheiden, ob der Ball links- oder rechtsseitig umfahren werden soll
 - 90$^\circ$ Drehung zu der gegebenen Seite 
 - Umfahren des Balles bis vorher berechneter Winkel zum Tor erreicht ist
@@ -82,20 +89,31 @@ Während des Szenarios ist für die Roboter wichtig ihren eigenen Ladezustand zu
 	- Ist dies der Fall -> feinjustierung der Schussposition 
 
 \subsection{Schießen} %TODO: Timo M.
+\sectionauthor{T.M.}
 - Überprüfen der seitlichen vorderen Abstandssensoren ob eine Wand detektiert wird
 	- Sollte eine Wand auf einer Seite detektiert werden -> Angedrehter Schuss mit Drehung des AMiRos weg von der Wand
 - Schießen des Balles durch kurzes Ansteuern beider Motoren 
 
 \subsection{Beiseite Fahren} %TODO: Julian E. (Besseren Titel suchen^^)
+\sectionauthor{J.E.}
+
+\subsection{Torjubel} %TODO: Andreas G.
+\sectionauthor{A.G.}
 
 \section{Spieltracking} %TODO: Julian D.
+\sectionauthor{J.D.}
 
 \subsection{Spielfeldbestimmung mit dem AR Toolkit} %TODO: Julian D.
+\sectionauthor{J.D.}
 
 \subsection{Extraktion wichtiger Spielelemente mit Bildverarbeitungsmethoden} %TODO: Julian D.
+\sectionauthor{J.D.}
 
 \subsection{Benutzerinteraktion mit AR Markern} %TODO: Julian D.
+\sectionauthor{J.D.}
 
 \subsection{Spielkoordination} %TODO: Julian D.
+\sectionauthor{J.D.}
 
 \subsection{Grafische Darstellung der Spielstatus} %TODO: Julian D.
+\sectionauthor{J.D.}

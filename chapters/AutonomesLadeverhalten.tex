@@ -1,10 +1,13 @@
 \chapter{Autonomes Ladeverhalten} \label{kap:AutonomesLadeverhalten}
 
 \section{Lokalisation der Ladestation} %TODO: Andi
+\sectionauthor{A.G.}
 
 \section{Einparken in der Ladestation} %TODO: Julian E.
+\sectionauthor{J.E.}
 
 \section{Andocken an die Ladestation} %TODO: Timo M.
+\sectionauthor{T.M.}
 Nachdem der AMiRo erfolgreich in der Ladestation eingeparkt hat werden anschließend die Ladepins auf der Rückseite des Roboters zu den Ladekontakten der Station ausgerichtet. Dabei ist es notwendig, dass alle Pins die Kontakte berühren, da es bei Stromspitzen sonst zu Schäden am AMiRo kommen könnte.
 
 Als ersten Schritt wird zunächst eine 180$^\circ$ Drehung durchgeführt, durch die der AMiRo grob in die Ladeposition gedreht wird. Die Drehung wird anhand der Odometriedaten des Roboters durchgeführt. Dabei kann eine gewünschte Fehlertoleranz als Argument übergeben werden. Da eine exakte Drehung um 180$^\circ$ kompliziert ist, wird hier eine Fehlertoleranz von 5$^\circ$ eingeräumt, damit die Drehung schnell durchgeführt werden kann und der AMiRo nicht die Position mehrfach verbessern muss, bis genau 180$^\circ$ erreicht sind. Diese Toleranz hat für das anschließende Justieren der Position keine Auswirkungen.
@@ -33,6 +36,7 @@ Bevor der Ladevorgang eingeleitet wird, wird die Position des AMiRos nochmals ü
 %		- AMiRo wird durch die Federung der Ladepins von der Station abgestoßen, da die Schraube nicht genau vor dem Magneten war und somit die magnetische Kraft nicht groß genug war 
 
 \section{Ansteuern und Überwachen des Ladevorgangs} %TODO: Timo M.
+\sectionauthor{T.M.}
 
 Sobald der AMiRo mit seinen Ladepins zu den Ladekontakten der Ladestation ausgerichtet ist, kann der Ladevorgang eingeleitet werden.
 Zunächst wird dem PowerManagement-Board signalisiert, dass der DiWheelDrive-Ladepfad aktiviert werden soll. Nun wird kontrolliert, ob wirklich mindestens 9V an den Pins anliegen und die Akkus aufgeladen werden. Hierfür wird eine kurze Zeit gewartet, da es aufgrund von Filterungen bei der Ermittlung der anliegenden Spannung zu Verzögerungen kommt. Sollten anschließend keine 9V anliegen und die Akkus nicht geladen werden, so wird der Ladevorgang abgebrochen und die Position des AMiRos zur Station wird nochmals justiert.
