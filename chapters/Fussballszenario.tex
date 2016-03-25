@@ -95,25 +95,57 @@ Der aktuelle Ladezustand kann wird bei jedem Durchlauf der FSM über den CAN Bus
 \subsection[Anfahren des Balls]{Anfahren des Balls\hfill {\normalsize J.E.}} %TODO: Julian E.
 
 \subsection[Lokalisation des gegnerischen Tores]{Lokalisation des gegnerischen Tores\hfill {\normalsize T.M.}} %TODO: Timo M.
-- Rotation um eigene Achse zur Lokalisation des Tores
-- Lokalisation Anhand von Blobb-Detektion 
-- Wenn ein einzelner Pfosten im Bild vorhanden ist - bereits gedrehten Winkel + zusätlichen Winkel vom Mittelpunkt des Bildes zum Pfosten speichern
-- Wenn beide Pfosten im Bild vorhanden sind - bereits gedrehten Winkel + zusätlichen Winkel vom Mittelpunkt des Bildes zum Tormittelpunkt speichern und Rotation beenden
-- Drehung zum Ball durchführen, um diesen wieder vor sich zu haben
+
+Nachdem der AMiRo an den Ball herangefahren ist beginnt er mit der Lokalisation des gegnerischen Tores. 
+Hierfür fängt der Roboter an sich langsam gegen den Uhrzeigersinn um die eigene Achse zu drehen. Dabei wird der Rotationswinkel gespeichert und nach einer vollen Umdrehung wird die Drehung beendet. 
+Während der Rotation werden die Bilder der Kamera darauf untersucht, ob die Torpfosten sichtbar sind. Die Detektion des Tores geschieht mittels des \textit{SimpleBlobDetector} der OpenCV-Programmbibliothek. Hierfür werden zunächst alle Pixel eines Bildes, die der Farbe des gegnerischen Tores entsprechen weiß und die restlichen schwarz eingefärbt.
+
+Wenn ein einzelner Blob detektiert wurde, wird dessen Position gespeichert und die Rotation fortgesetzt. Sobald zwei Blobs im Bild detektiert wurden, wird die Rotation des AMiRos gestoppt, da das gegnerische Tor nun gefunden wurde. Zunächst wird der Winkel des Mittelpunkt des Tores zur vertikalen Mittelachse des Kamerabildes berechnet. Weiter wird der gespeicherte Rotationswinkel hinzu addiert, um den Winkel zwischen der Ausgangssituation und dem Tor zu erhalten. Dies ist der Winkel Theta ($\theta$), welcher in Abbildung \ref{fig:anfahren_schritt1} eingezeichnet ist. 
+Sollte während einer vollen Rotation nur ein Pfosten detektiert werden, so wird der Winkel zu diesem berechnet.
+
+Anschließend dreht der AMiRo sich wieder in Richtung des Balles. Der berechnete Winkel Theta wird der \textit{takeAim(..)}-Methode übergeben, die anschließend den AMiRo in seine Schussposition navigiert.
+
+%- Rotation um eigene Achse zur Lokalisation des Tores
+%- Lokalisation Anhand von Blobb-Detektion 
+%- Wenn ein einzelner Pfosten im Bild vorhanden ist - bereits gedrehten Winkel + zusätlichen Winkel vom Mittelpunkt des Bildes zum Pfosten speichern
+%- Wenn beide Pfosten im Bild vorhanden sind - bereits gedrehten Winkel + zusätlichen Winkel vom Mittelpunkt des Bildes zum Tormittelpunkt speichern und Rotation beenden
+%- Drehung zum Ball durchführen, um diesen wieder vor sich zu haben
 
 \subsection[Schussposition anfahren]{Schussposition anfahren\hfill {\normalsize T.M.}} %TODO: Timo M.
-- Je nach Winkel zum Tor entscheiden, ob der Ball links- oder rechtsseitig umfahren werden soll
-- 90$^\circ$ Drehung zu der gegebenen Seite 
-- Umfahren des Balles bis vorher berechneter Winkel zum Tor erreicht ist
-	- Bei einem Hindernis wird das Umfahren des Balles gestoppt
-- 90$^\circ$ Drehung zum Ball
-- Überprüfung, ob sowohl Ball als auch das Tor im Bild zu sehen ist 
-	- Ist dies der Fall -> feinjustierung der Schussposition 
 
-\subsection[Schießen]{Schießen\hfill {\normalsize T.M.}} %TODO: Timo M.
-- Überprüfen der seitlichen vorderen Abstandssensoren ob eine Wand detektiert wird
-	- Sollte eine Wand auf einer Seite detektiert werden -> Angedrehter Schuss mit Drehung des AMiRos weg von der Wand
-- Schießen des Balles durch kurzes Ansteuern beider Motoren 
+Zum Anfahren der Schussposition des AMiRos wird zunächst entschieden, ob der AMiRo den Ball im oder gegen den Uhrzeigersinn umfahren soll. Dies wird anhand des übergebenen Torwinkels entschieden. Ist dieser kleiner oder gleich 180$^\circ$, so wird der Ball gegen den Uhrzeigersinn umfahren, andernfalls im Uhrzeigersinn.
+Nachdem dies entschieden wurde führt der AMiRo eine 90$^\circ$-Drehung in die gegebene Richtung aus. 
+Nun umfährt der Roboter den Ball in einer kreisförmigen Bewegung so lange, bis der umfahrende Winkel dem Winkel zum Tor entspricht (siehe Abb. \ref{fig:anfahren_schritt1}). Danach dreht der AMiRo sich zurück zum Ball, welcher sich nun zwischen Roboter und Tor befindet.
+Sollte während des Erreichen der Schussposition ein Hindernis im Weg sein, so wird die Bewegung gestoppt, eine Drehung zum Ball vollführt und diese Position für einen Schussversuch genutzt. Dieses Problem taucht vor allem auf, wenn der Ball zu nah an der Wand liegt.
+
+Da bei der Berechnung des Winkels die Distanz zum Ball nicht mit eingerechnet wurde kann es nun der Fall sein, dass sich der Mittelpunkt des Tores nicht geradlinig vor dem AMiRo befindet. Hierfür wird nun abermals der Winkel des Tormittelpunkts zur vertikalen Achse des Kamerabildes berechnet und entschieden, ob die Position gut genug für einen Schuss ist, oder noch nachgebessert werden muss. 
+Für das Nachjustieren wird die \textit{takeAim(..)}-Methode rekursiv aufgerufen, wobei der neue Winkel übergeben wird (siehe Abb. \ref{fig:anfahren_schritt2}). Zudem wird die Toleranz für die Position des Tores verdoppelt, um sicherzustellen, dass die Funktion nach einiger Zeit terminiert und nicht endlos versucht die Position des AMiRos zu verbessern.
+
+\begin{figure} []
+	\subfigure[Schritt 1]{\includegraphics[width=0.45\textwidth]{takeaim1.pdf}\label{fig:anfahren_schritt1}} 
+	\subfigure[Schritt 2]{\includegraphics[width=0.45\textwidth]{takeaim2.pdf}\label{fig:anfahren_schritt2}} 
+	\caption{Anfahren der Schussposition} 
+	\label{fig:anfahren}
+\end{figure} 
+
+%- Je nach Winkel zum Tor entscheiden, ob der Ball links- oder rechtsseitig umfahren werden soll
+%- 90$^\circ$ Drehung zu der gegebenen Seite 
+%- Umfahren des Balles bis vorher berechneter Winkel zum Tor erreicht ist
+%	- Bei einem Hindernis wird das Umfahren des Balles gestoppt
+%- 90$^\circ$ Drehung zum Ball
+%- Überprüfung, ob sowohl Ball als auch das Tor im Bild zu sehen ist 
+%	- Ist dies der Fall -> feinjustierung der Schussposition 
+
+\subsection[Schießen des Balles]{Schießen des Balles\hfill {\normalsize T.M.}} %TODO: Timo M.
+
+Nachdem der AMiRo seine finale Schussposition erreicht hat wird die Funktion zum Schießen des Balles aufgerufen. Dabei werden zunächst die Sensorwerte der seitlichen Abstandssensoren darauf untersucht, ob der AMiRo sich zu nah an einer Wand befindet um einen geraden Schuss auszuführen. Die vorderen Abstandssensoren sind für diese Detektion nicht zu nutzen, da sich der Ball direkt vor dem AMiRo befindet und dieser als eine Wand fehlinterpretiert werden würde. 
+Stellt der Roboter fest, dass sich keine Wand im Weg befindet, so führt er eine kurze schnelle Bewegung in Richtung des Balles aus um diesen zu schießen.
+Sollte sich auf einer Seite des AMiRos eine Wand befinden, so führt er einen angedrehten Schuss aus, indem er bei der Bewegung zum Ball eine Kurve fährt, die den Roboter von der Wand hinweg dreht. 
+Sollten sich auf beiden Seiten Wände befinden, so ist ein Schuss zu gefährlich, da der AMiRo gegen die Wand fahren würde.
+
+%- Überprüfen der seitlichen vorderen Abstandssensoren ob eine Wand detektiert wird
+%	- Sollte eine Wand auf einer Seite detektiert werden -> Angedrehter Schuss mit Drehung des AMiRos weg von der Wand
+%- Schießen des Balles durch kurzes Ansteuern beider Motoren 
 
 \subsection[Beiseite Fahren]{Beiseite Fahren\hfill {\normalsize J.E.}} %TODO: Julian E.
 

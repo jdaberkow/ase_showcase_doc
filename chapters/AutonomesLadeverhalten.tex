@@ -2,24 +2,48 @@
 
 \section[Lokalisation der Ladestation]{Lokalisation der Ladestation\hfill {\normalsize A.G.}} %TODO: Andi G.
 
-\section[Einparken in der Ladestation]{Einparken in der Ladestation\hfill {\normalsize J.E.}} %TODO: Julian E.
+\section[Finite-State-Machine des DiWheelDrive-Microcontrollers]{Finite-State-Machine des DiWheelDrive-Microcontrollers\hfill {\normalsize J.E. \& T.M.}} %TODO: Julian E. & Timo M.
 
-\section[Andocken an die Ladestation]{Andocken an die Ladestation\hfill {\normalsize T.M.}} %TODO: Timo M.
-Nachdem der AMiRo erfolgreich in der Ladestation eingeparkt hat werden anschließend die Ladepins auf der Rückseite des Roboters zu den Ladekontakten der Station ausgerichtet. Dabei ist es notwendig, dass alle Pins die Kontakte berühren, da es bei Stromspitzen sonst zu Schäden am AMiRo kommen könnte.
+Nachdem die Ladestation erfolgreich angefahren wurde, wird durch eine CAN-Nachricht dem DiWheelDrive-Board signalisiert, dass die weiteren Schritte des Einparkens eingeleitet werden sollen.
+Auf dem Microcontroller wird eine State-Machine ausgeführt, die so lange im \textit{IDLE}-Zustand wartet, bis das Ladeverhalten angetriggert wird (siehe Abb. \ref{fig:uC_statmachine}).
+Der nächste Zustand ist \textit{MOVE INTO STATION}, welcher in Kapitel \ref{kap:einparken_ladestation} erläutert wird. Ist dies erfolgreich abgeschlossen, so folgen die Zustände \textit{TURN AROUND} und \textit{ADJUST POSITION}, welche in Kapitel \ref{kap:andocken_ladestation} erklärt werden. Anschließend wird der Ladevorgang des AMiRos gestartet und überwacht. Dies geschieht in den Zuständen \textit{INITIATE CHARGING} und \textit{CHARGING}. Diese sind im Kapitel \ref{kap:ladevorgang} beschrieben.
 
-Als ersten Schritt wird zunächst eine 180$^\circ$ Drehung durchgeführt, durch die der AMiRo grob in die Ladeposition gedreht wird. Die Drehung wird anhand der Odometriedaten des Roboters durchgeführt. Dabei kann eine gewünschte Fehlertoleranz als Argument übergeben werden. Da eine exakte Drehung um 180$^\circ$ kompliziert ist, wird hier eine Fehlertoleranz von 5$^\circ$ eingeräumt, damit die Drehung schnell durchgeführt werden kann und der AMiRo nicht die Position mehrfach verbessern muss, bis genau 180$^\circ$ erreicht sind. Diese Toleranz hat für das anschließende Justieren der Position keine Auswirkungen.
+Sollte ein Zustand nicht erfolgreich ausgeführt werden können, so gibt es definierte Routinen, die abermals ausgeführt werden müssen. Sollte die CAN-Nachricht für einen Abbruch des Ladevorganges eingehen, so wird dieser sofort unterbrochen und die State-Machine wird in den \textit{IDLE}-Zustand versetzt.
 
-Für die Justierung der Ladeposition des AMiRos werden die Daten der beiden hinteren Abstandssensoren genutzt. Um diese zur Ausrichtung des Roboters nutzen zu können wurden an der Station zwei schwarze Streifen angebracht. Diese bieten einen hohen Kontrast für die UV-Sensoren im Vergleich zur weißen Station. So liefern die Sensoren den maximalen Wert von 0xFFFF, wenn sie sich direkt vor der weißen Ladestation befinden und einen im Vergleich sehr niedrigen Wert, wenn sie den Abstand zu einen schwarzen Klebestreifen messen. 
-Die Klebestreifen sind nun so angebracht, dass sich beide hinteren Abstandssensoren genau vor einer weißen Fläche befinden, wenn die Ladeposition erreicht ist. 
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.4\textwidth]{uC_statemachine.pdf} 	
+		\caption{Finite-State-Machine des DiWheelDrive-Microcontrollers}
+		\label{fig:uC_statmachine}
+	\end{center}
+\end{figure}
+
+\section[Einparken in der Ladestation]{Einparken in der Ladestation\hfill {\normalsize J.E.}}\label{kap:einparken_ladestation} %TODO: Julian E.
+
+\section[Andocken an die Ladestation]{Andocken an die Ladestation\hfill {\normalsize T.M.}}\label{kap:andocken_ladestation} %TODO: Timo M.
+Nachdem der AMiRo erfolgreich in der Ladestation eingeparkt ist werden anschließend die Ladepins auf der Rückseite des Roboters zu den Ladekontakten der Station ausgerichtet. Dabei ist es notwendig, dass alle Pins die Kontakte berühren, da es bei Stromspitzen sonst zu Schäden am AMiRo kommen könnte.
+
+Als ersten Schritt wird zunächst eine 180$^\circ$ Drehung durchgeführt, durch die der AMiRo grob in die Ladeposition gedreht wird. Die Drehung wird anhand der Odometriedaten des Roboters durchgeführt. Dabei kann eine gewünschte Fehlertoleranz als Argument übergeben werden. Da eine exakte Drehung um 180$^\circ$ kompliziert ist, wird hier eine Fehlertoleranz von 5$^\circ$ eingeräumt, damit die Drehung schnell durchgeführt werden kann und der AMiRo nicht die Position mehrfach verbessern muss, bis exakt 180$^\circ$ erreicht sind. Diese Toleranz hat auf das anschließende Justieren der Position keine Auswirkungen.
+
+Für die Justierung der Ladeposition des AMiRos werden die Daten der beiden hinteren Abstandssensoren genutzt. Um diese zur Ausrichtung des Roboters nutzen zu können, wurden an der Station zwei schwarze Streifen angebracht (siehe Abb. \ref{fig:charging_station}). Diese bieten einen hohen Kontrast für die UV-Sensoren im Vergleich zur weißen Station. So liefern die Sensoren den maximalen Wert von 0xFFFF, wenn sie sich direkt vor der weißen Ladestation befinden und einen im Vergleich sehr niedrigen Wert von unter 0x2000, wenn sie den Abstand zu einen schwarzen Klebestreifen messen. 
+Die Klebestreifen sind so angebracht, dass sich beide hinteren Abstandssensoren genau vor einer weißen Fläche befinden, wenn die Ladeposition erreicht ist. 
 Das heißt, dass die Position des AMiRos so lange justiert werden muss, bis beide Sensoren den Wert 0xFFFF liefern. 
 Dafür werden die Werte der Abstandssensoren ausgelesen und anhand dieser wird nun unterschieden in welcher Position sich der AMiRo befindet und welches der nächste Schritt ist, um die Ladeposition zu erreichen. 
 
-Sollte einer der beiden Sensoren 0xFFFF als Wert liefern und der andere einen zu 0xFFFF abweichenden Wert, so steht der AMiRo direkt vor der Wand der Station, muss aber noch in die Richtung des Sensors mit vollem Ausschlag gedreht werden. Da der Magnet der Station eine hohe Anziehung auf die hintere Befestigungsschraube des AMiRos ausübt, ist es nicht möglich den Roboter durch minimales Ansteuern der PWM\footnote{Pulsweitenmodulation} der Motoren zu drehen. Deshalb fährt der Roboter ein kleines Stück aus der Station heraus um sich anschließend in die gegebene Richtung in die Station hinein zu bewegen. 
+\begin{figure}[]
+	\begin{center}
+		\includegraphics[width=0.6\textwidth]{charging_station_stripes.jpg} 	
+		\caption{Ladestation mit Klebestreifen}
+		\label{fig:charging_station}
+	\end{center}
+\end{figure}
+
+Sollte einer der beiden Sensoren 0xFFFF als Wert liefern und der andere einen zu 0xFFFF abweichenden Wert, so steht der AMiRo direkt vor der Wand der Station, muss aber noch in die Richtung des Sensors mit vollem Ausschlag gedreht werden. Da der Magnet der Station eine hohe Anziehung auf die hintere Befestigungsschraube des AMiRos ausübt, ist es nicht möglich den Roboter durch minimales Ansteuern der PWM\footnote{Pulsweitenmodulation}-Steuerung der Motoren zu drehen. Deshalb fährt der Roboter ein kleines Stück aus der Station heraus um sich anschließend in die gegebene Richtung in die Station hinein zu bewegen. 
 Wenn ein Sensor einen Wert über 0x4000 und der andere unter 0x4000 liefert, bedeutet dies, dass sich der AMiRo mit einem Abstand vor der Station befindet und seine Position außerdem ein wenig verdreht ist. In dieser Situation muss sich der Roboter in die Richtung des Sensors mit höherem Wert drehen und sich auf die Station zu bewegen. 
 Geben beide Sensoren einen Wert über 0x4000 aus, so steht der AMiRo mit Abstand zur Station, muss jedoch nicht gedreht werden. In diesem Fall wird eine gerade Bewegung in Richtung der Station ausgeführt. 
 Sollten beiden Sensoren einen Wert unter 0x4000 liefern, so steht der AMiRo in einem zu hohen Abstand zur Ladestation und das Einparken in die Ladestation wird nochmals eingeleitet.
 
-Bevor der Ladevorgang eingeleitet wird, wird die Position des AMiRos nochmals überprüft. Hierfür werden die aktuellen Odometriedaten des Roboters abgerufen und gespeichert. Anschließend wird die PWM-Steuerung der Motoren deaktiviert, was zur Folge hat, dass sich die Reifen nun frei drehen können. Sollte der AMiRo noch nicht korrekt zur Ladestation ausgerichtet sein, kann die Position des Roboters durch die Wirkung des Magneten auf die Befestigungsschraube verändert werden. Dabei werden die aktuellen Odometriewerte mit den gespeicherten abgeglichen. Sollte sich nach einer Sekunde keine Änderung der Position ergeben haben, so wird eine korrekte Ladeposition angenommen und der Ladevorgang gestartet. Sollte sich die Odometrie verändern, so wird das Justieren nochmals eingeleitet. 
+Bevor der Ladevorgang eingeleitet wird, wird die Position des AMiRos nochmals überprüft. Hierfür werden die aktuellen Odometriedaten des Roboters abgerufen und gespeichert. Anschließend wird die PWM-Steuerung der Motoren deaktiviert, was zur Folge hat, dass sich die Reifen frei drehen können. Sollte der AMiRo noch nicht korrekt zur Ladestation ausgerichtet sein, kann die Position des Roboters durch die Wirkung des Magneten auf die Befestigungsschraube verändert werden. Dabei werden die aktuellen Odometriewerte mit den gespeicherten abgeglichen. Sollte sich nach einer Sekunde keine Änderung der Position ergeben haben, so wird eine korrekte Ladeposition angenommen und der Ladevorgang gestartet. Sollte sich die Odometrie verändern, so wird das Justieren nochmals eingeleitet. 
 
 
 
@@ -32,14 +56,24 @@ Bevor der Ladevorgang eingeleitet wird, wird die Position des AMiRos nochmals ü
 %		- AMiRo wird durch den Einfluss des Magnetfeldes auf die Schraube gedreht, da die Position noch nicht gut genug justiert ist
 %		- AMiRo wird durch die Federung der Ladepins von der Station abgestoßen, da die Schraube nicht genau vor dem Magneten war und somit die magnetische Kraft nicht groß genug war 
 
-\section[Ansteuern und Überwachen des Ladevorgangs]{Ansteuern und Überwachen des Ladevorgangs\hfill {\normalsize T.M.}} %TODO: Timo M.
+\section[Ansteuern und Überwachen des Ladevorgangs]{Ansteuern und Überwachen des Ladevorgangs\hfill {\normalsize T.M.}}\label{kap:ladevorgang} %TODO: Timo M.
 
 Sobald der AMiRo mit seinen Ladepins zu den Ladekontakten der Ladestation ausgerichtet ist, kann der Ladevorgang eingeleitet werden.
-Zunächst wird dem PowerManagement-Board signalisiert, dass der DiWheelDrive-Ladepfad aktiviert werden soll. Nun wird kontrolliert, ob wirklich mindestens 9V an den Pins anliegen und die Akkus aufgeladen werden. Hierfür wird eine kurze Zeit gewartet, da es aufgrund von Filterungen bei der Ermittlung der anliegenden Spannung zu Verzögerungen kommt. Sollten anschließend keine 9V anliegen und die Akkus nicht geladen werden, so wird der Ladevorgang abgebrochen und die Position des AMiRos zur Station wird nochmals justiert.
-Liegt die Spannung an und die Akkus werden geladen, so wird während des Ladevorgangs der Status mittels LEDs visualisiert. 
+Zunächst wird dem PowerManagement-Board signalisiert, dass der DiWheelDrive-Ladepfad aktiviert werden soll. Nun wird kontrolliert, ob wirklich mindestens 9V an den Pins anliegen und die Akkus aufgeladen werden. Hierfür wird eine kurze Zeit gewartet, da es aufgrund von Signalfilterungen bei der Ermittlung der anliegenden Spannung zu Verzögerungen kommt. Sollten anschließend keine 9V anliegen und die Akkus nicht geladen werden, so wird der Ladevorgang abgebrochen und die Position des AMiRos zur Station wird nochmals justiert.
+Liegt die Spannung an und die Akkus werden geladen, so wird während des Ladevorgangs der Status mittels LEDs visualisiert (siehe Abb. \ref{fig:amiro_charging}). 
 Währenddessen wird außerdem auf die Odometriedaten des AMiRos geachtet, denn sollte sich etwas an der Position des Roboters ändern, ist nicht mehr sichergestellt, dass alle Pins die Ladekontakte berühren und der Ladevorgang wird abgebrochen. Ein Grund hierfür könnten äußere Einwirkungen wie ein Wackeln am Schaukasten sein.
 
 Nachdem die Akkus des AMiRos voll geladen sind wird der DiWheelDrive-Ladepfad deaktiviert, die PWM-Steuerung aktiviert und der Roboter fährt ein Stück aus der Ladestation heraus.
+
+\begin{figure}[]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{AMiRo_charging.jpg} 	
+		\caption{Ladeanimation}
+		\label{fig:amiro_charging}
+	\end{center}
+\end{figure}
+
+
 
 %- Aktivieren des DiWheelDrive-Board Ladepfades (+ kurzes Abwarten)
 %- Kontrolle, ob mehr als 9V anliegen (wenn nicht -> Position erneut justieren)
