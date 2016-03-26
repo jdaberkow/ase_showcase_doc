@@ -28,7 +28,7 @@ Neben der Plattform-übergreifenden Kommunikation werden RSB und Spread zusätzl
 Die Kommunikation zwischen den AMiRos selbst und dem Host läuft über einen weiteren Spread-Daemon, der mit einer anderen Konfiguration geladen wird, die W-LAN Schnittstelle nutzt und auf Port  4803 hört und sendet (siehe ebenfalls Abschnitt \ref{sec:spread-config}).
 
 Die W-LAN Verbindung wurde durch einen eigenen Router realisiert und erlaubt so die feste Adresszuweisung für die drei Endpunkte, damit die Spread-Konfiguration darauf zurückgreifen kann. Die Einzelheiten können der W-LAN Konfiguration im Anhang (Abschnitt \ref{sec:wlan-config}) entnommen werden.
-\begin{figure}[H]
+\begin{figure}
 	\begin{center}
 		\includegraphics[scale=.65]{spread_communication.png} 	
 		\caption{Spread-Kommunikation}
@@ -72,14 +72,14 @@ Während des Szenarios ist es für die Roboter wichtig, ihren eigenen Ladezustan
 
 Der aktuelle Ladezustand kann wird bei jedem Durchlauf der FSM über den CAN Bus abgefragt und überprüft. Die genaue Ladestrategie wird in Abb. \ref{fig:charging-strategy} verdeutlicht. Fällt die Ladekapazität unter 10\%  wird zunächst überprüft, welchen Ladezustand der andere AMiRo aktuell hat. Liegt dieser unter 15\%, wird das Ladeverhalten gestartet. Fällt die eigene Ladekapazität unter 5\% wird das Ladeverhalten ebenfalls ausgelöst, unabhängig vom Ladezustand des anderen AMiRos. Wird dann eine weitere Grenze von 2\% unterschritten, wird zusätzlich eine Art Notrufsignal vom AMiRo gesendet. Dieses Signal veranlasst einen anderen Roboter, welcher gerade die Ladestation blockiert, aber schon ein bestimmtes Ladelevel erreicht hat, seinen Ladevorgang abzubrechen und die Ladestation frei zu machen.
 
-\begin{figure}[H]
+\begin{figure}
 	\begin{center}
 		\includegraphics[scale=.55]{Final_FSM_AMiRo.pdf} 	
 		\caption{Finite-State-Machine}
 		\label{fig:fsm-amiro}
 	\end{center}
 \end{figure}
-\begin{figure}[H]
+\begin{figure}
 	\begin{center}
 		\includegraphics[scale=.50]{Charging_Strategy.pdf} 	
 		\caption{Ladestrategie}
@@ -151,14 +151,69 @@ Sollten sich auf beiden Seiten Wände befinden, so ist ein Schuss zu gefährlich
 
 \subsection[Torjubel]{Torjubel\hfill {\normalsize A.G.}} %TODO: Andi G.
 
-\subsection[Spieltracking]{Spieltracking\hfill {\normalsize J.D.}} %TODO: Julian D.
+\section[Externes Spieltracking]{Externes Spieltracking\hfill {\normalsize J.D.}} %TODO: Julian D.
 
-\subsection[Spielfeldbestimmung mit dem AR Toolkit]{Spielfeldbestimmung mit dem AR Toolkit\hfill {\normalsize J.D.}} %TODO: Julian D.
+\subsection[Markerdetektion mit dem AR Toolkit]{Markerdetektion mit dem AR Toolkit\hfill {\normalsize J.D.}} %TODO: Julian D.
+\begin{figure}
+	\begin{center}
+		\subfigure[Marker 1]{
+			\includegraphics[width=0.30\textwidth]{15.pdf}
+			\label{fig:marker_1}
+		}
+		\subfigure[Marker 2]{
+			\includegraphics[width=0.30\textwidth]{17.pdf}
+			\label{fig:marker_2}
+		}
+		\subfigure[Marker 3]{
+			\includegraphics[width=0.30\textwidth]{25.pdf}
+			\label{fig:marker_3}
+		}
+		\caption{Beispiele für Marker des AR Toolkits}
+	\end{center}
+\end{figure}
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=\textwidth]{marker_detection.jpg} 	
+		\caption{Detektion der AR Toolkit Marker}
+		\label{fig:marker_detection}
+	\end{center}
+\end{figure}
 
 \subsection[Extraktion wichtiger Spielelemente mit Bildverarbeitungsmethoden]{Extraktion wichtiger Spielelemente mit Bildverarbeitungsmethoden\hfill {\normalsize J.D.}} %TODO: Julian D.
-
-\subsection[Benutzerinteraktion mit AR Markern]{Benutzerinteraktion mit AR Markern\hfill {\normalsize J.D.}} %TODO: Julian D.
+\begin{figure}
+	\begin{center}
+		\subfigure[Marker 1]{
+			\includegraphics[width=0.31\textwidth]{blob_green.png}
+			\label{fig:blob_green}
+		}
+		\subfigure[Marker 2]{
+			\includegraphics[width=0.31\textwidth]{blob_blue.png}
+			\label{fig:blob_blue}
+		}
+		\subfigure[Marker 3]{
+			\includegraphics[width=0.31\textwidth]{blob_red.png}
+			\label{fig:blob_red}
+		}
+		\caption{Verwendung der Blobdetektion}
+	\end{center}
+\end{figure}
 
 \subsection[Spielkoordination]{Spielkoordination\hfill {\normalsize J.D.}} %TODO: Julian D.
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=\textwidth]{Tracking_FSM.pdf} 	
+		\caption{FSM auf Host-Seite}
+		\label{fig:fsm-host}
+	\end{center}
+\end{figure}
 
-\subsection[Grafische Darstellung der Spielstatus]{Grafische Darstellung der Spielstatus\hfill {\normalsize J.D.}} %TODO: Julian D.
+\subsection[Grafische Darstellung des Spielstatus]{Grafische Darstellung des Spielstatus\hfill {\normalsize J.D.}} %TODO: Julian D.
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=\textwidth]{gui.png} 	
+		\caption{Grafische Benutzeroberfläche}
+		\label{fig:gui}
+	\end{center}
+\end{figure}
