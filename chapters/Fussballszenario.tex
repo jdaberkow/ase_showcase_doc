@@ -189,26 +189,35 @@ Die Einbettung des ARToolKits wird im Rahmen dieses Projektes durch das Programm
 
 Für jedes abgegriffene Videobild wird also ein \texttt{trackingImage}-Objekt erzeugt, welches zusätzlich zum unveränderten Kamerabild eine Liste von erfolgreichen Markerdetektionen beinhaltet. Dieses Objekt wird anschließend über einen frei konfigurierbaren RSB-Scope an den zweiten Prozess des Host-PCs gesendet.
 
-\subsection[Extraktion wichtiger Spielelemente mit Bildverarbeitungsmethoden]{Extraktion wichtiger Spielelemente mit Bildverarbeitungsmethoden\hfill {\normalsize J.D.}} %TODO: Julian D.
+\subsection[Extraktion wichtiger Spielelemente]{Extraktion wichtiger Spielelemente\hfill {\normalsize J.D.}} %TODO: Julian D.
+
+Empfangen wird das versendete \texttt{trackingImage}-Objekt von dem zweiten Prozess \texttt{processShowcase}. Dieser übernimmt neben der Koordinierung des Spielgeschehens zusätzlich die Aufgabe der Extraktion wichtiger Spielelemente aus dem Videobild und bindet zu diesem Zweck die freie Bildverarbeitungsbibliothek OpenCV ein.
+
+An erster Stelle steht dabei die perspektivische Transformation des Bildes. Sollten vom ARToolKit alle vier Spielfeldmarker detektiert worden sein, so wird das Bild unter Verwendung von OpenCV so transformiert, dass die vier Eckpunkte des Spielfeldes auch die Eckpunkte des angezeigten Bildes darstellen. Zusätzlich wird die Größe des Bildes an dieser Stelle reduziert, um die Last des Prozessors zu minimieren. Dies ist möglich, da die folgenden Methoden im Gegensatz zur Markerdetektion in der Lage sind, auch mit wesentlich geringeren Auflösungen stabile Ergebnisse zu liefern.
+
+Um die Positionen von Torpfosten sowie Ball erfassen zu können, kommt im Folgenden das Verfahren der Blobdetektion zum Einsatz. Zunächst werden dafür drei Grauwertbilder generiert, die jeweils starke Ausschläge der Farbkanäle Grün, Blau und Rot visualisieren. Diese \glqq starken Ausschläge\grqq~werden nicht durch absolute Werte definiert, sondern dadurch, dass der Wert der entscheidenden Farbe um einen bestimmten Faktor größer sein muss, als die Werte der anderen Farben. In Kombination mit einem Schwellwert, den die Farbe mindestens annehmen muss, wird die Detektion auf diesem Wege robuster gegenüber Veränderungen der allgemeinen Lichtverhältnisse. Abbildung \ref{fig:blob} zeigt die resultierenden Grauwertbilder.
+
 \begin{figure}
 	\begin{center}
-		\subfigure[Marker 1]{
+		\subfigure[Grün]{
 			\includegraphics[width=0.31\textwidth]{blob_green.png}
-			\label{fig:blob_green}
 		}
-		\subfigure[Marker 2]{
+		\subfigure[Blau]{
 			\includegraphics[width=0.31\textwidth]{blob_blue.png}
-			\label{fig:blob_blue}
 		}
-		\subfigure[Marker 3]{
+		\subfigure[Rot]{
 			\includegraphics[width=0.31\textwidth]{blob_red.png}
-			\label{fig:blob_red}
 		}
 		\caption{Verwendung der Blobdetektion}
+		\label{fig:blob}
 	\end{center}
 \end{figure}
 
-\subsection[Spielkoordination]{Spielkoordination\hfill {\normalsize J.D.}} %TODO: Julian D.
+Auf diesen Bilder wird im Anschluss seperat die eigentliche Blobdetektion durchgeführt. Zum Einsatz kommt dabei der \texttt{SimpleBlobDetector} aus der OpenCV-Bibliothek. Als Parameter werden diesem diverse Filter hinzugefügt um die Stabilität der Detektion weiter zu erhöhen. Beispielsweise wird für die Detektion des Ballblobs von einem höheren Maß an Rundheit ausgegangen, als bei den Blobs, die die Torpfosten signalisieren.
+
+Je nach aktueller Spielsituation (siehe Kapitel \ref{kap:spielkoordination}) werden die aus der Blobdetektion erhaltenen Koordinaten für Torpfosten und Ball verwendet um in jedem neuen Bild zu überprüfen ob ein Tor gefallen ist. Zu diesem Zweck wird stets die letzte bekannte Position des Balls zwischengespeichert. Wenn eine zwischen den beiden Ballpositionen gedachte Linie, die Linie eines der Tore kreuzt so wird dies erkannt und die State-Machine der Spiellogik kann entsprechend darauf reagieren.
+
+\subsection[Spielkoordination]{Spielkoordination\hfill {\normalsize J.D.}} \label{kap:spielkoordination}%TODO: Julian D.
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=\textwidth]{Tracking_FSM.pdf} 	
