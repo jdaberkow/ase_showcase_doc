@@ -1,6 +1,6 @@
 \chapter{Fussballszenario} \label{kap:Fussballszenario} %TODO: Besseren Kapiteltitel
 
-\section[Szenario Koordination]{Szenario Koordination\hfill {\normalsize H.O.}}
+\section[Szenario Koordination]{Szenario Koordination\hfill {\normalsize H.O.}} \label{sec:szenario_koordination}
 
 Die Szenario Koordination umfasst sowohl das Verhalten der einzelnen AMiRos, kooperative Elemente zwischen verschiedenen AMiRos, als auch die Kommunikation mit dem Host-PC. Der Entwurf dieser drei Themenbereiche soll im folgenden kurz vorgestellt und begründet werden:
 
@@ -11,8 +11,6 @@ Da das Szenario in seiner Komplexität jedoch noch begrenzt ist und kein vollst�
 Das Verhalten einzelner AMiRos wird erweitert durch kooperative Fähigkeiten und die Möglichkeit der Kommunikation durch einen festgelegten Befehlssatz. Kann beispielsweise ein AMiRo während einer Spielaktion den Ball nicht lokalisieren, kann er eine Nachricht an den anderen AMiRo schicken, woraufhin dieser sich dann ein Stück bewegt, um die Sicht auf den Ball freizugeben.
 
 Zusätzlich besteht die Möglichkeit für die AMiRos mit dem Host-PC zu kommunizieren, welcher an Hand eines Kamerabildes und zusätzlicher Bildverarbeitungslogik das Spielgeschehen verfolgen, interpretieren und steuern kann. Dies erlaubt außerdem eine Benutzerinteraktion, um das Spiel zu starten, zu pausieren oder zu unterbrechen. In der derzeitigen Realisierung übermittelt der Host-PC außerdem noch den Status des Spielballs, also ob dieser in Bewegung ist oder ruht. Diese Information wird von den AMiRos verwendet, um eigenständig zu bestimmen, welcher AMiRo gerade am Zug ist.
-
-\vfill
 
 \section[Kommunikation per RSB und Spread]{Kommunikation per RSB und Spread\hfill {\normalsize H.O.}}
 Damit die AMiRos untereinander kommunizieren können, wurde eine Publish-Subscribe Architektur basierend auf der RSB Middleware aufgesetzt und anstatt einer einfachen Socket-Transport Lösung wurde auf das etwas komplexere Spread Toolkit zurückgegriffen (siehe RSB Konfigurationsdatei im Anhang \ref{sec:rsb-config}).
@@ -153,32 +151,43 @@ Sollten sich auf beiden Seiten Wände befinden, so ist ein Schuss zu gefährlich
 
 \section[Externes Spieltracking]{Externes Spieltracking\hfill {\normalsize J.D.}} %TODO: Julian D.
 
-\subsection[Markerdetektion mit dem AR Toolkit]{Markerdetektion mit dem AR Toolkit\hfill {\normalsize J.D.}} %TODO: Julian D.
+Zusätzlich zu den beiden AMiRos, die in dem Fußballszenario agieren, sorgt ein zusätzlicher Host-PC für die Koordination des Spielablaufs. Dazu kommuniziert auch er, wie bereits in Kapitel \ref{sec:szenario_koordination} beschrieben, über eine RSB-/Spreadverbindung sowohl intern über zwei Prozesse hinweg, als auch extern zu den AMiRos. Zusätzlich ist eine handelsübliche Webcam in einem geneigten Winkel rund 2 Meter über dem Spielfeld angebracht, um die Erkennung und Aufbereitung entscheidender Spielelemente mithilfe von Bildverarbeitungsverfahren ermöglichen zu können.
+
+Die beiden intern kommunizierenden Prozesse lauten \texttt{localizationShowcase} und \texttt{processShowcase}. Während \texttt{localizationShowcase} das Kamerabild abgreift und die Detektion von Markern übernimmt, analysiert \texttt{processShowcase} das Spielgeschehen mithilfe einer Blobdetektion und zeigt zudem die grafische Benutzeroberfläche an. Neben dem Vorteil der besseren Wartbarkeit, ist der Grund für die Unterteilung in zwei seperate Prozesse die Unvereinbarkeit der verwendeten Softwarebibliotheken ARToolKit und OpenCV.
+
+\subsection[Markerdetektion mit dem ARToolKit]{Markerdetektion mit dem ARToolKit\hfill {\normalsize J.D.}} %TODO: Julian D.
+
+Das ARToolKit ist eine Open-Source-basierte Softwarebibliothek, die aus dem Bereich der Augmented Reality stammt. Während die möglichen Anwendungsszenarien des ARToolKits vielzählig sind, liegt eine seiner Kernkompetenzen in der schnellen sowie zuverlässigen Detektion und Lokalisation von vordefinierten Markern in einem Videostream. Beispiele für die verwendeten Marker sind in Abbildung \ref{fig:art_marker} dargestellt. Die Detektion erfolgt dabei sowohl rotations- als auch translationsinvariant und liefert dem Benutzer eine Bildkoordinate sowie einen Rotationswinkel.
+
 \begin{figure}
 	\begin{center}
-		\subfigure[Marker 1]{
+		\subfigure{
 			\includegraphics[width=0.30\textwidth]{15.pdf}
-			\label{fig:marker_1}
 		}
-		\subfigure[Marker 2]{
+		\subfigure{
 			\includegraphics[width=0.30\textwidth]{17.pdf}
-			\label{fig:marker_2}
 		}
-		\subfigure[Marker 3]{
+		\subfigure{
 			\includegraphics[width=0.30\textwidth]{25.pdf}
-			\label{fig:marker_3}
 		}
-		\caption{Beispiele für Marker des AR Toolkits}
+		\caption{Beispiele für Marker des ARToolKits}
+		\label{fig:art_marker}
 	\end{center}
 \end{figure}
+
+Abbildung \ref{fig:marker_detection} ist ein Beispielbild der verwendeten Webcam und es zeigt die Anwendungsgebiete der Markerdetektion im Rahmen des Fußballszenarios. Zum einen sind vier Marker in den jeweiligen Eckpunkten des Schaukastens angebracht. Anhand dessen soll im weiteren Verlauf eine Vorselektierung des Bildausschnittes ermöglicht werden um die Bildverarbeitung zum Einen beschleunigen und zum Anderen die Fehldetektion von Objekten außerhalb des Glaskastens verhindern zu können. Außerdem befinden sich Marker auf der Oberseite der AMiRos. Diese haben im aktuellen Zustand keinen praktischen Nutzen für die Spielmechanik an sich, ermöglichen es der grafischen Benutzeroberfläche aber, die aktuelle Position der AMiRos ansprechend zu visualisieren. Zusätzlich sind einige Marker auf DIN A4 Papier aufgetragen. Diese lösen auf dem Host-PC vordefinierte Events aus und ermöglichen dem Anwender dadurch eine direkte Interaktion ohne die Zuhilfenahme von klassischen Eingabegeräten wie Maus oder Tastatur.
 
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=\textwidth]{marker_detection.jpg} 	
-		\caption{Detektion der AR Toolkit Marker}
+		\caption{Detektion der ARToolKit Marker}
 		\label{fig:marker_detection}
 	\end{center}
 \end{figure}
+
+Die Einbettung des ARToolKits wird im Rahmen dieses Projektes durch das Programm \texttt{localizationShowcase} realisiert. Dieses bedient sich zunächst der Videoschnittstelle Video4Linux um die Bilddaten der Webcam abzugreifen. In einem nächsten Schritt wird eine neue Instanz des RSB-Datentyps \texttt{trackingImage} angelegt. Der Prototyp dieses Datentyps beinhaltet sowohl den Standardtyp \texttt{Image} aus der RSB-Bibliothek, als auch eine Liste von Elementen des Typs \texttt{Pose2D} welche jeweils die Felder \texttt{X}, \texttt{Y}, \texttt{orientation} und \texttt{id} beinhalten. Die Kombination dieser beiden Typen bringt den Vorteil mit sich, dass Bild- und Trackingdaten bereits synchronisiert auf der Seite des Empfängers ankommen, ohne dass dieser weitere Ressourcen für die Synchronisation benötigen würde.
+
+Für jedes abgegriffene Videobild wird also ein \texttt{trackingImage}-Objekt erzeugt, welches zusätzlich zum unveränderten Kamerabild eine Liste von erfolgreichen Markerdetektionen beinhaltet. Dieses Objekt wird anschließend über einen frei konfigurierbaren RSB-Scope an den zweiten Prozess des Host-PCs gesendet.
 
 \subsection[Extraktion wichtiger Spielelemente mit Bildverarbeitungsmethoden]{Extraktion wichtiger Spielelemente mit Bildverarbeitungsmethoden\hfill {\normalsize J.D.}} %TODO: Julian D.
 \begin{figure}
