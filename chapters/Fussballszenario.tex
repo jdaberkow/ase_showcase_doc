@@ -163,17 +163,28 @@ In der Ausführung werden in zeitlichen Schritten immer wieder die Funktionen zu
 \end{figure}
 
 In den Abbildungen \ref{fig:cheer_rnd_stage_switch} und \ref{fig:cheer_chaser_single_grp} sind implementierte Lichtanimationen dargestellt. Sie sollen den zeitlichen Verlauf (A-D bzw. A-H) von den fünf Animationstypen visualisieren. Die erste Bilderstrecke A-D in Abbildung \ref{fig:cheer_rnd_stage_switch} zeigt einen kontinuierlichen Farbwechsel aller LEDs. Ein rotes stufenartiges Lauflicht wird in der zweiten Bilderstrecke A-D dargestellt, welches im Anschluss zurückgesetzt wird. Die letzte Bilderstrecke A-D beinhaltet ein abwechselndes in-/aktiven Zustand der LEDs mit Phasenverschiebung zur Nachbar-LED.
-Innerhalb der ersten Bilderstrecke A-H in Abbildung \ref{fig:cheer_chaser_single_grp} erfolgt ein klassisches Lauflicht im Kreis. Die zweite Bilderstrecke A-H zeigt ein Lauflicht mit aktiv bleibendem Zustand der LEDs bis zur Zurücksetzung am Ende. Alle Lichtanimationen sind solange aktiv, bis die Bewegungsform beendet ist oder die Kollisionsvermeidung greift.
+Innerhalb der ersten Bilderstrecke A-H in Abbildung \ref{fig:cheer_chaser_single_grp} erfolgt ein klassisches Lauflicht im Kreis. Die zweite Bilderstrecke A-H zeigt ein Lauflicht mit aktiv bleibendem Zustand der LEDs bis zum Zurücksetzung am Ende. Alle Lichtanimationen sind solange aktiv, bis die Bewegungsform beendet ist oder die Kollisionsvermeidung greift.
 
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[scale=.3]{cheer_chaser_single_grp.png} 	
-		\caption{Lauflichtanimationen}
+		\caption{Lauflichtanimationen des AMiRo}
 		\label{fig:cheer_chaser_single_grp}
 	\end{center}
 \end{figure}
 
-%TODO: Bilder und Text für die 4 Bewegungsformen
+Die Implementierung beinhaltet vier unterschiedliche Bewegungsformen, welche in Abbildung \ref{fig:moveForm} dargestellt sind. Eine vor und zurück Bewegung des AMiRo wird in Bild A ausgeführt. Eine zweite Bewegungsform, mit einer vollen Rotation um die eigene Achse, wird in Bild B visualisiert. Die Erweiterung der Rotation ist die einmalige Bewegung im Kreis, welche in Bild C zu sehen ist. In Bild D wird eine Achtform dargestellt, die der AMiRo fahren kann.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=.6]{moveForm.png} 	
+		\caption{Bewegungsformen während des Torjubels}
+		\label{fig:moveForm}
+	\end{center}
+\end{figure}
+
+%TODO: grafik für ablauf des quellcodes + text anpassen + Seitenaufbau überarbeiten
+
 
 \section[Externes Spieltracking]{Externes Spieltracking\hfill {\normalsize J.D.}} %TODO: Julian D.
 
