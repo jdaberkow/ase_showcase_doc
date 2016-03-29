@@ -148,6 +148,32 @@ Sollten sich auf beiden Seiten Wände befinden, so ist ein Schuss zu gefährlich
 \subsection[Beiseite Fahren]{Beiseite Fahren\hfill {\normalsize J.E.}} %TODO: Julian E.
 
 \subsection[Torjubel]{Torjubel\hfill {\normalsize A.G.}} %TODO: Andi G.
+Um das Fußballszenario an die Realität anzulehnen, darf ein gebührender Torjubel nicht fehlen. Einerseits visualisiert der AMiRo mit dem Torjubel seinen erfolgreichen Torschuss, zusätzlich zur grafischen Darstellung des Spielstatus. Andererseits ist es eine technische Visualisierung der korrekten Kommunikation der State-Machine und des Spieltrackings. Darüber hinaus haben besondere Effekte den Vorteil das Interesse der Zuschauer an diesem Schaukastenszenario zu erhöhen.
+
+Bei diesem Torjubel wird der Effekt aus einer Kombination von Bewegungsform und Lichtanimation gebildet. Damit das Verhalten des AMiRo autonom wirkt, wurde je für Bewegung und Licht eine Menge an Elementen implementiert. Vor jedem neuen Torjubel wird jeweils zufällig\footnote{generierte Pseudozufallszahlen} eine Bewegungsform und eine Lichtanimation ausgewählt. Weiterhin werden durch die Pseudozufallszahlen unterschiedliche Parameter bestimmt, wodurch ein noch eigenständigeres Verhalten simuliert wird. Dazu gehören beispielsweise die Bewegungsrichtung (rechts, links) bei allen Bewegungsformen, die Laufrichtung (rechts, links) der Lichtanimationen und die Farbe. Durch die modulare Implementierung können weitere Elemente hinzugefügt werden, die wiederum genauso zufällig auswählbar sind.
+
+In der Ausführung werden in zeitlichen Schritten immer wieder die Funktionen zur Bewegungsform und zur Lichtanimation aufgerufen. Innerhalb der Funktionen werden die Abläufe für Bewegung und Licht überprüft und eventuell im Anschluss Kommandos gesetzt. Beispielsweise soll eine Anpassung der Bewegungsrichtung erfolgen, wenn die Orientierung der Odometrie einen gewissen Wert erreicht hat. Damit der AMiRo nicht mit der Umwelt kollidiert, wird nach jedem Bewegungs- und Lichtaufruf eine Funktion zur Kollisionsvermeidung aufgerufen. Diese kontrolliert die Umgebung mittels Infrarotsensoren und hält den AMiRo ab einem Schwellwert an. Falls ein Objekt den Weg blockiert oder die Bewegungsform abgefahren ist, beendet sich der Torjubel und die State-Machine übernimmt wieder.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=.3]{cheer_rnd_stage_switch.png} 	
+		\caption{Zufallsfarben, Stufenanimation, abwechselnd aktive LEDs}
+		\label{fig:cheer_rnd_stage_switch}
+	\end{center}
+\end{figure}
+
+In den Abbildungen \ref{fig:cheer_rnd_stage_switch} und \ref{fig:cheer_chaser_single_grp} sind implementierte Lichtanimationen dargestellt. Sie sollen den zeitlichen Verlauf (A-D bzw. A-H) von den fünf Animationstypen visualisieren. Die erste Bilderstrecke A-D in Abbildung \ref{fig:cheer_rnd_stage_switch} zeigt einen kontinuierlichen Farbwechsel aller LEDs. Ein rotes stufenartiges Lauflicht wird in der zweiten Bilderstrecke A-D dargestellt, welches im Anschluss zurückgesetzt wird. Die letzte Bilderstrecke A-D beinhaltet ein abwechselndes in-/aktiven Zustand der LEDs mit Phasenverschiebung zur Nachbar-LED.
+Innerhalb der ersten Bilderstrecke A-H in Abbildung \ref{fig:cheer_chaser_single_grp} erfolgt ein klassisches Lauflicht im Kreis. Die zweite Bilderstrecke A-H zeigt ein Lauflicht mit aktiv bleibendem Zustand der LEDs bis zur Zurücksetzung am Ende. Alle Lichtanimationen sind solange aktiv, bis die Bewegungsform beendet ist oder die Kollisionsvermeidung greift.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=.3]{cheer_chaser_single_grp.png} 	
+		\caption{Lauflichtanimationen}
+		\label{fig:cheer_chaser_single_grp}
+	\end{center}
+\end{figure}
+
+%TODO: Bilder und Text für die 4 Bewegungsformen
 
 \section[Externes Spieltracking]{Externes Spieltracking\hfill {\normalsize J.D.}} %TODO: Julian D.
 
