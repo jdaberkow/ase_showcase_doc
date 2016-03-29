@@ -195,7 +195,7 @@ Empfangen wird das versendete \texttt{trackingImage}-Objekt von dem zweiten Proz
 
 An erster Stelle steht dabei die perspektivische Transformation des Bildes. Sollten vom ARToolKit alle vier Spielfeldmarker detektiert worden sein, so wird das Bild unter Verwendung von OpenCV so transformiert, dass die vier Eckpunkte des Spielfeldes auch die Eckpunkte des angezeigten Bildes darstellen. Zusätzlich wird die Größe des Bildes an dieser Stelle reduziert, um die Last des Prozessors zu minimieren. Dies ist möglich, da die folgenden Methoden im Gegensatz zur Markerdetektion in der Lage sind, auch mit wesentlich geringeren Auflösungen stabile Ergebnisse zu liefern.
 
-Um die Positionen von Torpfosten sowie Ball erfassen zu können, kommt im Folgenden das Verfahren der Blobdetektion zum Einsatz. Zunächst werden dafür drei Grauwertbilder generiert, die jeweils starke Ausschläge der Farbkanäle Grün, Blau und Rot visualisieren. Diese \glqq starken Ausschläge\grqq~werden nicht durch absolute Werte definiert, sondern dadurch, dass der Wert der entscheidenden Farbe um einen bestimmten Faktor größer sein muss, als die Werte der anderen Farben. In Kombination mit einem Schwellwert, den die Farbe mindestens annehmen muss, wird die Detektion auf diesem Wege robuster gegenüber Veränderungen der allgemeinen Lichtverhältnisse. Abbildung \ref{fig:blob} zeigt die resultierenden Grauwertbilder.
+Um die Positionen von Torpfosten sowie Ball erfassen zu können, kommt im Folgenden das Verfahren der Blobdetektion zum Einsatz. Zunächst werden dafür drei Grauwertbilder generiert, die jeweils starke Ausschläge der Farbkanäle Grün, Blau und Rot visualisieren. Diese \glqq starken Ausschläge\grqq~werden dabei nicht durch absolute Werte definiert, sondern dadurch, dass der Wert der entscheidenden Farbe um einen bestimmten Faktor größer sein muss, als die Werte der anderen Farben. In Kombination mit einem Schwellwert, den die Farbe mindestens annehmen muss, wird die Detektion auf diesem Weg robuster gegenüber Veränderungen der allgemeinen Lichtverhältnisse. Abbildung \ref{fig:blob} zeigt die resultierenden Grauwertbilder.
 
 \begin{figure}
 	\begin{center}
@@ -213,12 +213,15 @@ Um die Positionen von Torpfosten sowie Ball erfassen zu können, kommt im Folgen
 	\end{center}
 \end{figure}
 
-Auf diesen Bilder wird im Anschluss seperat die eigentliche Blobdetektion durchgeführt. Zum Einsatz kommt dabei der \texttt{SimpleBlobDetector} aus der OpenCV-Bibliothek. Als Parameter werden diesem diverse Filter hinzugefügt um die Stabilität der Detektion weiter zu erhöhen. Beispielsweise wird für die Detektion des Ballblobs von einem höheren Maß an Rundheit ausgegangen, als bei den Blobs, die die Torpfosten signalisieren.
+Auf diesen Bildern wird im Anschluss jeweils die eigentliche Blobdetektion durchgeführt. Zum Einsatz kommt dabei der \texttt{SimpleBlobDetector} aus der OpenCV-Bibliothek. Als Parameter werden diesem diverse Filter hinzugefügt um die Stabilität der Detektion weiter zu erhöhen. Beispielsweise wird für die Detektion des Ballblobs von einem höheren Maß an Rundheit ausgegangen, als bei den Blobs, die von den Torpfosten ausgehen.
 
 Je nach aktueller Spielsituation (siehe Kapitel \ref{kap:spielkoordination}) werden die aus der Blobdetektion erhaltenen Koordinaten für Torpfosten und Ball verwendet um in jedem neuen Bild zu überprüfen ob ein Tor gefallen ist. Zu diesem Zweck wird stets die letzte bekannte Position des Balls zwischengespeichert. Wenn eine zwischen den beiden Ballpositionen gedachte Linie, die Linie eines der Tore kreuzt so wird dies erkannt und die State-Machine der Spiellogik kann entsprechend darauf reagieren.
 
 \subsection[Spielkoordination]{Spielkoordination\hfill {\normalsize J.D.}} \label{kap:spielkoordination}%TODO: Julian D.
-\begin{figure}
+
+Da der Host-PC eine Reihe von Aufgaben besitzt, die für einen reibungslosen Ablauf des Fußballszenarios unumgänglich sind, wird auch dieser maßgeblich über die Regeln einer Finite-State-Machine gesteuert. Die Aufgaben lassen sich unterteilen in die Kalibrierung der Spielfelddetektion, das manuelle Starten eines Ladezyklus' auf einem der AMiRos und schließlich die Koordination des eigentlichen Spieles, samt der dazugehörigen grafischen Visualisierung. 
+
+\begin{figure}[t]
 	\begin{center}
 		\includegraphics[width=\textwidth]{Tracking_FSM.pdf} 	
 		\caption{FSM auf Host-Seite}
@@ -226,12 +229,28 @@ Je nach aktueller Spielsituation (siehe Kapitel \ref{kap:spielkoordination}) wer
 	\end{center}
 \end{figure}
 
-\subsection[Grafische Darstellung des Spielstatus]{Grafische Darstellung des Spielstatus\hfill {\normalsize J.D.}} %TODO: Julian D.
+Der Graph, der die State-Machine visualisiert, ist in Abbildung \ref{fig:fsm-host} dargestellt. Zum Start der Anwendung befindet sich die State-Machine in dem Zustand \texttt{RECALIBRATE\_CROP}. An dieser Stelle wird solange gewartet, bis alle vier Eckpunktmarker mindestens einmal vom \texttt{localizationShowcase}-Prozess detektiert und deren Koordinaten via RSB versendet wurden.
 
-\begin{figure}
+In dem nächsten Zustand \texttt{RECALIBRATE\_POSTS} wird versucht, sowohl die grünen als auch die roten Torpfosten mithilfe der Blobdetektion zu erkennen. Auch dieser Zustand wird solange nicht verlassen bis alle 4 Torpfosten einwandfrei detektiert werden konnten. Um Fehldetektionen durch beispielsweise über das Spielfeld gehaltene Hände an dieser Stelle minimieren zu können, dürfen maximal 2 Blobs pro Farbe erkannt worden sein. Die erfolgreiche Kalibrierung der Pfosten wird durch das Einzeichnen der Torlinien auf der grafischen Oberfläche signalisiert (siehe Abbildung \ref{fig:gui}) und die State-Machine wechselt in den \texttt{IDLE}-Zustand.
+
+Dieser Zustand ist der Ausgangspunkt für alle weiteren Aktionen, die der Nutzer durch die Verwendung der zusätzlichen ARToolKit-Marker initialisieren kann. Hat sich die Position der Kamera oder des Spielfeldes verschoben oder ist die vorangegangene Kalibrierung fehlerhaft gewesen, so kann durch das Vorzeigen des richtigen Markers erneut in den Zustand \texttt{RECALIBRATE\_CROP} gewechselt werden.
+
+Alternativ kann der Nutzer zudem das Wechseln in den Zustand \texttt{INIT\_RECHARGE} anstoßen. Dieser dient dazu, einem der AMiRos den Befehl zum Anfahren einer Ladestation zu übermitteln. Da die AMiRos das Aufladen bei kritischen Akkuständen jedoch auch autark umsetzen, dient diese Funktion lediglich Präsentationszwecken.
+
+Schließlich ist der Nutzer während des \texttt{IDLE}-Zustands in der Lage die State-Machine in den \texttt{SCENARIO\_INIT}-Zustand zu bringen und somit das Starten des Fußballszenarios zu initialisieren. Dabei wird beiden AMiRos die Nachricht \texttt{startScenario} übermittelt und erst fortgefahren wenn beide den Erhalt der Nachricht über einen Handshake-Mechanismus bestätigt haben. Sollte der Nutzer währenddessen nicht per Marker den Befehl zum Abbruch des Spiels gegeben haben, sendet der Host einmalig eine \texttt{yourTurn}-Nachricht zum grünen AMiRo, der daraufhin seinen ersten Zug vollführen darf.
+
+\begin{figure}[t]
 	\begin{center}
 		\includegraphics[width=\textwidth]{gui.png} 	
 		\caption{Grafische Benutzeroberfläche}
 		\label{fig:gui}
 	\end{center}
 \end{figure}
+
+Im weiteren Verlauf ist das Senden einer \texttt{yourTurn}-Nachricht nicht mehr notwendig, da die AMiRos mithilfe des \texttt{ballMoving}-Signals des Hosts in der Lage sind, eigenständig den eigenen Zug zu beenden und den anderen AMiRo über den Beginn seines Zuges zu informieren. Das \texttt{ballMoving}-Signal wird dabei immer dann vom Host emittiert, wenn mithilfe der Blobdetektion eine Bewegung des Balls festgestellt werden kann.
+
+Zu jedem Zeitpunkt des Spiels sind die AMiRos in der Lage das Spielgeschehen mithilfe einer \texttt{lowEnergy}-Nachricht zu pausieren. Dadurch wechselt die State-Machine in den \texttt{SCENARIO\_PAUSE}-Zustand und ermöglicht dem AMiRo das Andocken an die Ladestation, ohne dass das Spiel dabei weiterläuft. In diesem Fall wartet der Host solange, bis er von beiden AMiRos das \texttt{idle}-Signal erhält und wechselt im Anschluss erneut in den \texttt{SCENARIO\_INIT}-Zustand. Die Spielzeit sowie der Spielstand werden in diesem Fall nicht zurückgesetzt.
+
+Alternativ zur \texttt{lowEnergy}-Nachricht hat der Nutzer zudem stets die Möglichkeit, das Spiel mithilfe eines Markers manuell zu unterbrechen. Dabei wird beiden AMiRos eine \texttt{cancelScenario}-Nachricht gesendet und die State-Machine geht abermals in den \texttt{SCENARIO\_PAUSE}-Zustand über. Um diesen Zustand nun verlassen ist eine weitere Interaktion durch den Nutzer zwingend erforderlich. Er kann das Szenario entweder fortsetzen, oder aber komplett beenden, was das Zurücksetzen von Spielzeit und -Stand zur Folge hat und in einer Rückkehr zum \texttt{IDLE}-Zustand resultiert.
+
+
