@@ -1,23 +1,23 @@
 \chapter[Einleitung]{Einleitung \hfill\raggedleft{\normalsize J.D.}} \label{kap:einleitung} %TODO: Julian D.
-- Bezug nehmen auf Vorlesungsinhalte --> Übertragung auf realisiertes Projekt
 
-- Ziele und Voraussetzungen einarbeiten:\\
-Ziele:\\
-Fußball Tipp-Kick Szenario \\
-Autonome Ladestrategien für AMiRos\\
-Spieltracking durch Bildverarbeitung\\
-\\
-Voraussetzungen:\\
-2 AMiRos\\
-1 Ladestation\\
-1 Schaukasten\\
-1 Webcam\\
-1 Host-PC\\
-1 Router\\
-2 Tore\\
-1 Spielball\\
-diverse AR-Marker\\
+Während autonom agierende mobile Systeme ursprünglich in den Bereichen der Wissenschaft und der Industrie beheimatet waren, finden sie heutzutage vermehrt Einzug in die alltägliche Situationen eines Haushalts. Neben vielen anderen Anwendungsgebieten ist der Staubsaugroboter eines der populärsten Beispiele.
 
-%TODO: 
-Beschreibung der Kapitelautoren?
-z.B. Hendrik Oestreich = H.O.
+Sämtliche dieser Anwendungsgebiete eint jedoch ein lediglich begrenzter Vorrat an Ressourcen. Um Mobilität gewährleisten zu können, müssen nicht nur die verfügbaren Rechenkapazitäten möglichst gering gehalten werden. Auch die Energieressourcen sind lediglich in einem begrenzten Umfang verfügbar.
+
+Eine Möglichkeit diesem Problem zu begegnen, ist die Verwendung einer Ladestation, die von dem mobilen Roboter je nach Bedarf in regelmäßigen Abständen angefahren werden kann. Während ein derartiges Szenario bei lediglich einem Roboter hinsichtlich der Energieplanung ohne weiteres umzusetzen ist, erfordert das Aufkommen zusätzlicher mobiler System die Einführung von vorausschauendem Handeln.
+
+Das Ziel dieses Projektes ist es, autonome Ladestrategien für einen solchen Fall zu entwerfen, praktisch unter der Verwendung des mobilen Miniroboters AMiRo\footnote{Autonomous Mini Robot} zu implementieren und in ein anwendungsspezifisches Szenario zu integrieren.
+
+Als Szenario dient an dieser Stelle eine Anlehnung an das Spiel Tipp-Kick, in welchem zwei Kontrahenten abwechselnd versuchen einen Ball auf das gegnerische Tor zu schießen. Dabei sollen die AMiRos in der Lage sein, das Spiel unter der Koordination eines Host-PCs zu spielen und im Falle eines niedrigen Energiestatus nach Absprache mit dem anderen AMiRo in die Ladestation fahren.
+
+Der Host-PC soll dabei lediglich spielsteuernde Elemente übernehmen. Er beobachtet das Spielfeld über eine handelsübliche Webcam und ist in der Lage die Spielsituation zu analysieren und über eine grafische Benutzeroberfläche zu visualisieren. Zusätzlich ermöglicht er die Steuerung des Szenarios durch einen Nutzer unter der Zuhilfenahme mehrerer Marker.
+
+Die Autoren der Kapitel sind über ihre Namenskürzel neben den jeweiligen Überschrift gekennzeichnet. Die Bedeutung der Kürzel lautet wie folgt:
+
+\itemize{
+\item{J.D. - Julian Daberkow}
+\item{J.E. - Julian Exner}
+\item{A.G. - Andreas Gatting}
+\item{H.O. - Hendrik Oestreich}
+\item{T.M. - Timo Michalski}
+}
