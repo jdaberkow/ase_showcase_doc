@@ -35,7 +35,7 @@ Die W-LAN Verbindung wurde durch einen eigenen Router realisiert und erlaubt so 
 \end{figure}
 
 
-\subsection[Finite-State-Machine]{Finite-State-Machine\hfill {\normalsize H.O.}}
+\subsection[Finite-State-Machine]{Finite-State-Machine\hfill {\normalsize H.O.}} \label{cha:Finite-State-Machine}
 Die State-Machine regelt das Verhalten der einzelnen AMiRos. Jedes Verhalten wird in kleinstmögliche Einheiten unterteilt, die dann einzeln angesprochen und überall wiederverwendet werden können. Nach der Initialisierung aller RSB-Komponenten und Variablen wird im Programm die State-Machine gestartet.
 
 Solange kein Fehler auftritt, bleibt das Programm immer innerhalb der State-Machine und wechselt den aktuellen Zustand nur auf Grund externer Nachrichten, die in Form von RSB Events oder CAN Messages eingehen können. Extern beschreibt also in diesem Zusammenhang sowohl die anderen Programmkomponenten die auf dem AMiRo laufen, als auch RSB Events von einem anderen AMiRo oder dem Host-PC und CAN Nachrichten vom Mikrocontroller.
