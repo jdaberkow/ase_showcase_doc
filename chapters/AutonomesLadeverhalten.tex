@@ -1,4 +1,4 @@
-\chapter{Autonomes Ladeverhalten} \label{kap:AutonomesLadeverhalten}
+\chapter[Autonomes Ladeverhalten]{Autonomes Ladeverhalten \hfill\raggedleft{\normalsize A.G.}} \label{kap:AutonomesLadeverhalten}
 Ein wesentlicher Bestandteil von autarken Systemen ist die erwähnte Energieressource. Falls es sich darüber hinaus um ein mobiles System handelt, ist die Verfügbarkeit einer Ladestation auf langer Sicht unabdingbar. Aus diesem Grund muss ein autonomes Ladeverhalten bestehen, welches jederzeit die Ladestation lokalisieren, anfahren und in dieser einparken kann. Dazu ist es bei einem aktuellen Ladevorgang essentiell diesen zu überwachen und zu kontrollieren.
 
 \section[Anfahren der Ladestation]{Anfahren der Ladestation\hfill {\normalsize A.G.}} \label{cha:Anfahren der Ladestation} %TODO: Andi G.
@@ -124,7 +124,7 @@ Der nächste Zustand ist \textit{MOVE INTO STATION}, welcher in Kapitel \ref{kap
 
 Sollte ein Zustand nicht erfolgreich ausgeführt werden können, so gibt es definierte Routinen, die abermals ausgeführt werden müssen. Sollte die CAN-Nachricht für einen Abbruch des Ladevorganges eingehen, so wird dieser sofort unterbrochen und die State-Machine wird in den \textit{IDLE}-Zustand versetzt.
 
-\begin{figure}[H]
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=0.4\textwidth]{uC_statemachine.pdf} 	
 		\caption{Finite-State-Machine des DiWheelDrive-Microcontrollers}
@@ -135,7 +135,7 @@ Sollte ein Zustand nicht erfolgreich ausgeführt werden können, so gibt es defi
 \section[Einparken in der Ladestation]{Einparken in der Ladestation\hfill {\normalsize J.E.}}\label{kap:einparken_ladestation} %TODO: Julian E.
 Dem Anfahren der Ladestation der Ladestation folgt das Einparken. Dieser Vorgang ist auf dem DiWheelDrive-Mikrocontroller implementiert, um eine Unabhängigkeit von optionalen Komponenten, wie dem Cognition-Board des AMiRo, herzustellen. Das Ziel des Einparkens in die Ladestation ist es, dass sich der AMiRo bündig in der ``Bucht'' der Ladestation (siehe Abb. \ref{fig:einparken}) befindet. Am Ende dieses Vorgangs ist der AMiRo so ausgerichtet, dass er der Ladestation zugewandt ist.
 
-\subsection{Vermessung des Magnetometers}
+\subsection[Vermessung des Magnetometers]{Vermessung des Magnetometers\hfill {\normalsize J.E.}}
 Im Rahmen dieses Projektes wurde das Magnetometer des AMiRo untersucht, um festzustellen, ob es zum Detektieren der Ladestation und anschließendem Einparken geeignet ist.
 Bei dem Magnetometer handelt es ich um das HMC5883L-Board von Honeywell.
 Die Messreihen wurden wie folgt angefertigt. Der AMiRo wurde mit der Vorderseite nach Norden ausgerichtet. Dies definieren wir als $0^\circ$. Nun beginnt der AMiRo eine Rotation in positiver Richtung. In etwa $10^\circ$-Abständen werden die Sonsordaten des Magnetometers erfasst und ausgegeben. Das Magnetometer verfügt über drei Achsen. Die magnetische Flussdichte entlang der Achsen ist über eine Schnittstelle des DiWheelDrive in $\mu$Gauss abrufbar. Der Verlauf einer solchen Messung ist in \ref{fig:no-station} zu sehen.
@@ -163,7 +163,7 @@ Die Implementierung des Einparkens beschränkt sich auf die X-Achse des Magnetom
 	\label{fig:messdaten}
 \end{figure}
 
-\subsection{Ablauf des Einparkens}
+\subsection[Ablauf des Einparkens]{Ablauf des Einparkens\hfill {\normalsize J.E.}}
 In der angenommenen Ausgangssituation befindet sich der AMiRo in einem Abstand von ein bis zwei Zentimetern vom Magneten der Ladestation. Nun wird ein globaler Scan mit Hilfe des Magnetometers durchgeführt, d.h. der AMiRo dreht sich um die eigene Achse und nimmt währenddessen kontinuierlich Werte mit dem Magnetometer auf. Der Winkel, unter dem der maximale Sensorwert des Magnetometers gemessen wurde, wird gespeichert. Wurde eine vollständige $360^\circ$ Drehung abgeschlossen, richtet sich der AMiRo zu dem Winkel aus, unter dem der maximale Ausschlag des Magnetometers gemessen wurde. Anschließend beginnt eine Vorfährtstrajektorie bis ein Hindernis erkannt wurde. Die Hinderniserkennung erfolgt mit Hilfe der Infrarot-Ringsensoren und der Odometrie. Die reine Hinderniserkennung nur mit Hilfe der Ringsensoren ist problematisch, da die Ladestation mit schwarzen Klebestreifen versehen ist, die durch die Infrarotsensoren kaum erkennbar sind.
 
 %TODO: mehr zu Odometrie

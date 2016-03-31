@@ -1,4 +1,4 @@
-\chapter{Fussballszenario} \label{kap:Fussballszenario} %TODO: Besseren Kapiteltitel
+\chapter[Fussballszenario]{Fussballszenario \hfill\raggedleft{\normalsize A.G.}} \label{kap:Fussballszenario} %TODO: Besseren Kapiteltitel
 Um das autonome Ladeverhalten in ein anwendungsspezifisches Szenario zu integrieren und es damit aktiv zu verwenden, wurde das Spiel Tipp-Kick gewählt. Dieses Spielszenario verhält sich ebenso autark wie das Ladeverhalten. Folglich muss eine ausgeklügelte Koordination und Kommunikation der Miniroboter stattfinden. Diese werden über einen endlichen Zustandsautomaten realisiert, mit der sämtliche Module kontrolliert werden. Im Rahmen des Spieles müssen zudem Strategien entwickelt werden, die ein aktives Spielgeschehen verfolgen. Das Erzielen von Toren ist dabei eine Aufgabe. In diesem Zusammenhang wird ein externes Spieltracking benötigt, damit das Spiel an sich überwacht und über eine grafische Benutzerschnittstelle visualisiert werden kann.
 
 \section[Szenario Koordination]{Szenario Koordination\hfill {\normalsize H.O.}} \label{sec:szenario_koordination}
@@ -73,7 +73,7 @@ Der aktuelle Ladezustand kann wird bei jedem Durchlauf der FSM über den CAN Bus
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[scale=.55]{Final_FSM_AMiRo.pdf} 	
+		\includegraphics[width=\textwidth]{Final_FSM_AMiRo.pdf} 	
 		\caption{Finite-State-Machine}
 		\label{fig:fsm-amiro}
 	\end{center}
@@ -303,7 +303,7 @@ Da der Host-PC eine Reihe von Aufgaben besitzt, die für einen reibungslosen Abl
 	\end{center}
 \end{figure}
 
-Der Graph, der die State-Machine visualisiert, ist in Abbildung \ref{fig:fsm-host} dargestellt. Zum Start der Anwendung befindet sich die State-Machine in dem Zustand \texttt{RECALIBRATE\_CROP}. An dieser Stelle wird solange gewartet, bis alle vier Eckpunktmarker mindestens einmal vom \texttt{localizationShowcase}-Prozess detektiert und deren Koordinaten via RSB versendet wurden.
+Der Graph, der die State-Machine visualisiert, ist in Abbildung \ref{fig:fsm-host} dargestellt. Zum Start der Anwendung befindet sich die State-Machine in dem Zustand \texttt{RECALIBRATE\_""CROP}. An dieser Stelle wird solange gewartet, bis alle vier Eckpunktmarker mindestens einmal vom \texttt{localizationShowcase}-Prozess detektiert und deren Koordinaten via RSB versendet wurden.
 
 In dem nächsten Zustand \texttt{RECALIBRATE\_POSTS} wird versucht, sowohl die grünen als auch die roten Torpfosten mithilfe der Blobdetektion zu erkennen. Auch dieser Zustand wird solange nicht verlassen bis alle 4 Torpfosten einwandfrei detektiert werden konnten. Um Fehldetektionen durch beispielsweise über das Spielfeld gehaltene Hände an dieser Stelle minimieren zu können, dürfen maximal 2 Blobs pro Farbe erkannt worden sein. Die erfolgreiche Kalibrierung der Pfosten wird durch das Einzeichnen der Torlinien auf der grafischen Oberfläche signalisiert (siehe Abbildung \ref{fig:gui}) und die State-Machine wechselt in den \texttt{IDLE}-Zustand.
 
