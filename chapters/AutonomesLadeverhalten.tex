@@ -1,6 +1,6 @@
 \chapter{Autonomes Ladeverhalten} \label{kap:AutonomesLadeverhalten}
 
-\section[Anfahren der Ladestation]{Anfahren der Ladestation\hfill {\normalsize A.G.}} %TODO: Andi G.
+\section[Anfahren der Ladestation]{Anfahren der Ladestation\hfill {\normalsize A.G.}} \label{cha:Anfahren der Ladestation} %TODO: Andi G.
 
 Damit der AMiRo sich in der Ladestation aufladen kann, muss diese zunächst lokalisiert und angefahren werden. Hierbei dient der komplette Schaukasten als Bewegungsfläche und der Schaukastenrand als Begrenzung dieser Fläche. Für die Suche kann der AMiRo auf unterschiedliche Strategien und Verfahren zurückgreifen. Als Suchstrategien existiert zum einen eine Positionsabschätzung über die Kamerabilder der Umgebung, um den kürzesten Pfad zum Schaukastenrand zu berechnen. Zum anderen kann der AMiRo sich in die aktuelle Richtung bewegen und auf gut Glück den Schaukastenrand finden. Als Verfahren zum Anfahren der Ladestation wird entweder auf die Kamera oder auf die Infrarotsensoren am Boden des AMiRo's zurückgegriffen.
 
@@ -47,11 +47,74 @@ Ein zweites Verfahren ist die Detektion über die Infrarotbodensensoren. In Abbi
 Der Zustand \texttt{switchToUc} ist der finale Zustand in dieser State-Machine. Hier werden Parameter zurückgesetzt und das erfolgreiche Anfahren der Ladestation durch Lichter visualisiert. Ein Signal an \texttt{showcaseFSM} beendet den zweiten Kernabschnitt.
 
 \section[Lokalisation der Ladestation durch Positionsabschätzung]{Lokalisation der Ladestation durch Positionsabschätzung\hfill {\normalsize A.G.}} \label{cha:Lokalisation der Ladestation}
-Da der Begriff \textit{autonom} ein gewisses intelligentes Verhalten für die Selbstständigkeit mit sich zieht, ist eine zufällige Suche der Ladestation nicht optimal. Aus einer Menge vieler möglichen Strategien wurde die Berechnung der nächsten Kante und die darauffolgende kürzeste Strecke zur Ladestation gewählt. 
+Da der Begriff \textit{autonom} ein gewisses intelligentes Verhalten für die Selbstständigkeit mit sich zieht, ist eine zufällige Suche der Ladestation nicht optimal. Aus einer Menge vieler möglichen Strategien wurde die Berechnung der nächsten Kante und die darauffolgende kürzeste Strecke zur Ladestation gewählt. Diese Strategie lässt sich gut über das Kamerabild realisieren und bietet durch die Aufteilung eine Robustheit mit der Annahme, dass die Ladestation durch eine Kantenverfolgung erreicht werden kann.
 
+Da im Schaukasten hinsichtlich der Markierungen sehr minimalistisch gearbeitet wurde, ist eine Positionsabschätzung anhand der Torpfosten eine gute Möglichkeit. Alternativ wäre eine interne Karte eine weitere Möglichkeit, allerdings ist dies im Rahmen dieses Projektes zu viel Aufwand.
 
+Mit der Bestimmung des nächsten Torpfosten beginnt der Zustand \texttt{goalDetected}. Grundlage dafür sind die über den \textit{SimpleBlobDetector} jeweils ermittelten minimalen und maximalen X- und Y-Koordinaten der Torpfosten. Mit der Annahme, dass Objekte mit zunehmender Entfernung zum Betrachter kleiner wirken, wird der nächste Torpfosten anhand der relativen Größe bestimmt. Diese Information ist im späteren Verlauf für die endgültige Ausrichtung wichtig. Als nächstes folgt die vorläufige Drehung zum Tor, um die einzelnen Schritte zu visualisieren. Dies wird in der Abbildung \ref{fig:firstRotationToPost} dargestellt. Die Orientierung der Odometrie zum Tor wurde in der vorherigen Detektion der Torpfosten mit abgespeichert (rote, gestrichelte Linie). Der Differenzwinkel $\Delta_\Theta$ wird demnach aus dieser und der Orientierung der Startposition berechnet.
 
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[scale=.6]{firstRotationToPost.pdf} 	
+		\caption{Ausrichtung des AMiRo zum Tor}
+		\label{fig:firstRotationToPost}
+	\end{center}
+\end{figure}
 
+Mit den statischen Informationen (Position und Dimensionen), können die Torpfosten als Landmarken im Raum verwendet werden. Die Schaukastendimensionen dienen dazu als Koordinatensystem, um eine Positionsabschätzung zu liefern. Dafür werden im folgenden die Distanzen zu den Torpfosten und die Winkel zu diesen benötigt, die mittels Trigonometrie berechnet werden.
+
+Die Distanzberechnung zum Torpfosten ist schematisch in Abbildung \ref{fig:distToPost} dargestellt. Hierbei ist der Winkel $\Theta$ der halbe vertikale Kamerawinkel, da im gesamten Verlauf die relevanten Objekte unterhalb des Horizontes liegen und nur das untere Kamerabild betrachtet wird. Dies spart zum einen Rechenleistung bei der Bildanalyse und zum anderen reduziert es potentiell falsche Objektdetektion. Um die Gegenkathete $B$ zu erhalten, wird die statische Größe des Torpfostens auf die vertikale Bildgröße hochskaliert. Mit Winkel $\Theta$ und Gegenkathete $B$ wird in der Gleichung \ref{eq:distanceToPost} die Ankathete bzw. Distanz $A$ bestimmt.
+
+\begin{equation}
+	A = B \cdot \tan(\Theta)
+	\label{eq:distanceToPost}
+\end{equation}
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[scale=.6]{distanceToPost.pdf} 	
+		\caption{Distanzberechnung zum Torpfosten}
+		\label{fig:distToPost}
+	\end{center}
+\end{figure}
+
+Für die Berechnung der Positionswinkel zu dem Torpfosten wird der Kosinussatz verwendet. Hierzu sind in Abbildung \ref{fig:trianglePost} die zuvor berechneten Distanzen zu den Torpfosten als Ankathete $B$ und Hypotenuse $C$ zu sehen. Der Gegenkathete $A$ ist der Abstand zwischen den Torpfosten und somit eine bekannte Konstante. Mit den drei Seiten können alle Winkel des Dreiecks über den Kosinussatz, den Gleichungen in \ref{eq:anglePost}, berechnet werden. Der relevante Positionswinkel ist hier die Summe $\epsilon = \alpha + \beta$. Steht der AMiRo linksseitig vom Tor, wäre die Winkelsumme $\epsilon = \alpha + \gamma$ (nächster Torpfosten, siehe oben). 
+
+\begin{equation}
+	\begin{aligned}
+		\alpha = \arccos(\frac{B^2 + C^2 - A^2}{2 \cdot B \cdot C}) \\\\
+		\beta = \arccos(\frac{A^2 + C^2 - B^2}{2 \cdot A \cdot C}) \\\\
+		\gamma = \arccos(\frac{A^2 + B^2 - C^2}{2 \cdot A \cdot B})
+		\label{eq:anglePost}
+	\end{aligned}
+\end{equation}
+
+\begin{figure} []
+	\subfigure[Winkelberechnung]{\includegraphics[width=0.4\textwidth]{trianglePost.pdf}\label{fig:trianglePost}} \hspace{2cm}
+	\subfigure[Koordinatenberechnung]{\includegraphics[width=0.4\textwidth]{coordsAmiro.pdf}\label{fig:coordsAmiro}} 
+	\caption{Winkel- und Koordinatenberechnung des AmiRo} 
+	\label{fig:triangleAndCoordsPost}
+\end{figure}
+
+Durch die hinzugekommenen Distanz- und Winkelinformation ist nun eine Positionsabschätzung möglich. In Abbildung \ref{fig:coordsAmiro} sind diese eingezeichnet. Die beiden Gleichungen in \ref{eq:positionCoords} beschreiben die Berechnung der X und Y Koordinaten mit $D$ als Distanz und $\epsilon$ als Winkel. Abhängig von der Position des AMiRos zum nächsten Torpfosten, linksseitig oder rechtsseitig, wird der Wert zur Torposition addiert oder subtrahiert.
+
+\begin{equation}
+	\begin{aligned}
+		x\_amiro = x\_tor~+-~~D \cdot \cos(\epsilon) \\\\
+		y\_amiro = y\_tor~+-~~D \cdot \sin(\epsilon)
+		\label{eq:positionCoords}
+	\end{aligned}
+\end{equation}
+
+Mit der Positionsabschätzung lässt sich im weiteren die nächste Kante identifizieren. In der Abbildung \ref{fig:showcaseSplit} ist die Aufteilung der Fläche des Schaukastens ersichtlich. Jedes Gebiet beschreibt dabei die Richtung zur nächsten Kante, welche durch die vier großen Pfeile in der Abbildung verdeutlicht wird. Da der Schaukasten als Koordinatensystem angesehen wird und dem AMiRo eine Positionsabschätzung mit Koordinaten zugeordnet wurde, kann das aktuelle Gebiet ermittelt werden. Der Positionswinkel $\epsilon$ wird hier als Grundlage zur Ausrichtung zur nächsten Kante eingesetzt. Dieser Winkel $\epsilon$ beschreibt in diesem Szenario immer ein Drehwinkelverhältnis zu einem der seitlichen Kante. Das bedeutet den tatsächlichen Drehwinkel $\Delta_\Theta = 180 - \epsilon$, welcher dem Winkel $\gamma$ aus der Abbildung \ref{fig:trianglePost} entspricht. In $90^\circ$-Schritten wird der Drehwinkel für die anderen Kanten ausgerechnet. Nach der Bestimmung des Drehwinkels, richtet sich der AMiRo aus und die State-Machine aus Abschnitt \ref{cha:Anfahren der Ladestation} wechselt in den Zustand \texttt{moveAndCollAvoid}.
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[scale=.4]{showcaseSplit.pdf} 	
+		\caption{Gebietsaufteilung im Schaukasten}
+		\label{fig:showcaseSplit}
+	\end{center}
+\end{figure}
 
 \section[Finite-State-Machine des DiWheelDrive-Microcontrollers]{Finite-State-Machine des DiWheelDrive-Microcontrollers\hfill {\normalsize J.E. \& T.M.}} %TODO: Julian E. & Timo M.
 
