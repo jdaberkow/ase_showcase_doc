@@ -186,7 +186,7 @@ Bei diesem Torjubel wird der Effekt aus einer Kombination von Bewegungsform und 
 
 Das Ablaufdiagramm in Abbildung \ref{fig:celebrationSequence} stellt den Aufbau des Torjubels dar. Sobald die State-Machine \texttt{showcaseFSM} den Torjubel anstößt, wird zunächst ein Lichteffekt und eine Bewegungsform ausgewählt. Diese werden danach in einer Schleife mit anschließender Kollisionsvermeidung ausgeführt. Zu Beginn wird in die entsprechend Methode der Lichtanimation gewechselt und jedes mal das Licht der acht LEDs nach einem Muster angepasst. Daraufhin wird in die ausgewählte Methode der Bewegungsform gewechselt und über den CAN Bus Motorwerte übermittelt. Hierbei wird ebenfalls nach einem bestimmten Muster vorgegangen, indem erst bei der Überschreitung von Schwellwerten der Odometrie Kommandos gesetzt werden. In der darauffolgenden Methode der Kollisionsvermeidung wird jedes mal von neuem die Umgebung mittels Infrarotsensoren überprüft. Falls ein Objekt den Weg blockiert oder die Bewegungsform abgefahren ist, beendet sich der Torjubel und die State-Machine \texttt{showcaseFSM} übernimmt.
 
-\begin{figure}[h]
+\begin{figure}[H]
 	\begin{center}
 		\includegraphics[scale=.7]{celebrationSequence.pdf} 	
 		\caption{Ablaufdiagramm eines Torjubels}
@@ -194,7 +194,7 @@ Das Ablaufdiagramm in Abbildung \ref{fig:celebrationSequence} stellt den Aufbau 
 	\end{center}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
 	\begin{center}
 		\includegraphics[scale=.3]{cheer_rnd_stage_switch.png} 	
 		\caption{Zufallsfarben, Stufenanimation, abwechselnd aktive LEDs}
