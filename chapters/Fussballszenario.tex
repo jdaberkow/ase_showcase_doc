@@ -1,4 +1,5 @@
 \chapter{Fussballszenario} \label{kap:Fussballszenario} %TODO: Besseren Kapiteltitel
+Um das autonome Ladeverhalten in ein anwendungsspezifisches Szenario zu integrieren und es damit aktiv zu verwenden, wurde das Spiel Tipp-Kick gewählt. Dieses Spielszenario verhält sich ebenso autark wie das Ladeverhalten. Folglich muss eine ausgeklügelte Koordination und Kommunikation der Miniroboter stattfinden. Diese werden über einen endlichen Zustandsautomaten realisiert, mit der sämtliche Module kontrolliert werden. Im Rahmen des Spieles müssen zudem Strategien entwickelt werden, die ein aktives Spielgeschehen verfolgen. Das Erzielen von Toren ist dabei eine Aufgabe. In diesem Zusammenhang wird ein externes Spieltracking benötigt, damit das Spiel an sich überwacht und über eine grafische Benutzerschnittstelle visualisiert werden kann.
 
 \section[Szenario Koordination]{Szenario Koordination\hfill {\normalsize H.O.}} \label{sec:szenario_koordination}
 
@@ -150,11 +151,19 @@ Sollten sich auf beiden Seiten Wände befinden, so ist ein Schuss zu gefährlich
 \subsection[Torjubel]{Torjubel\hfill {\normalsize A.G.}} %TODO: Andi G.
 Um das Fußballszenario an die Realität anzulehnen, darf ein gebührender Torjubel nicht fehlen. Einerseits visualisiert der AMiRo mit dem Torjubel seinen erfolgreichen Torschuss, zusätzlich zur grafischen Darstellung des Spielstatus. Andererseits ist es eine technische Visualisierung der korrekten Kommunikation der State-Machine und des Spieltrackings. Darüber hinaus haben besondere Effekte den Vorteil das Interesse der Zuschauer an diesem Schaukastenszenario zu erhöhen.
 
-Bei diesem Torjubel wird der Effekt aus einer Kombination von Bewegungsform und Lichtanimation gebildet. Damit das Verhalten des AMiRo autonom wirkt, wurde je für Bewegung und Licht eine Menge an Elementen implementiert. Vor jedem neuen Torjubel wird jeweils zufällig\footnote{generierte Pseudozufallszahlen} eine Bewegungsform und eine Lichtanimation ausgewählt. Weiterhin werden durch die Pseudozufallszahlen unterschiedliche Parameter bestimmt, wodurch ein noch eigenständigeres Verhalten simuliert wird. Dazu gehören beispielsweise die Bewegungsrichtung (rechts, links) bei allen Bewegungsformen, die Laufrichtung (rechts, links) der Lichtanimationen und die Farbe. Durch die modulare Implementierung können weitere Elemente hinzugefügt werden, die wiederum genauso zufällig auswählbar sind.
+Bei diesem Torjubel wird der Effekt aus einer Kombination von Bewegungsform und Lichtanimation gebildet. Damit das Verhalten des AMiRo autonom wirkt, wurde je für Bewegung und Licht eine Menge an Elementen implementiert. Vor jedem neuen Torjubel wird jeweils zufällig\footnote{generierte Pseudozufallszahlen} eine Bewegungsform und eine Lichtanimation ausgewählt. Weiterhin werden durch die Pseudozufallszahlen unterschiedliche Parameter bestimmt, wodurch ein noch eigenständigeres Verhalten simuliert wird. Dazu gehören beispielsweise die Bewegungsrichtung bei allen Bewegungsformen, die Laufrichtung der Lichtanimationen und die Farbe. Durch die modulare Implementierung können weitere Ausführungselemente hinzugefügt werden, die wiederum zufällig auswählbar sind.
 
-In der Ausführung werden in zeitlichen Schritten immer wieder die Funktionen zur Bewegungsform und zur Lichtanimation aufgerufen. Innerhalb der Funktionen werden die Abläufe für Bewegung und Licht überprüft und eventuell im Anschluss Kommandos gesetzt. Beispielsweise soll eine Anpassung der Bewegungsrichtung erfolgen, wenn die Orientierung der Odometrie einen gewissen Wert erreicht hat. Damit der AMiRo nicht mit der Umwelt kollidiert, wird nach jedem Bewegungs- und Lichtaufruf eine Funktion zur Kollisionsvermeidung aufgerufen. Diese kontrolliert die Umgebung mittels Infrarotsensoren und hält den AMiRo ab einem Schwellwert an. Falls ein Objekt den Weg blockiert oder die Bewegungsform abgefahren ist, beendet sich der Torjubel und die State-Machine übernimmt wieder.
+Das Ablaufdiagramm in Abbildung \ref{fig:celebrationSequence} stellt den Aufbau des Torjubels dar. Sobald die State-Machine \texttt{showcaseFSM} den Torjubel anstößt, wird zunächst ein Lichteffekt und eine Bewegungsform ausgewählt. Diese werden danach in einer Schleife mit anschließender Kollisionsvermeidung ausgeführt. Zu Beginn wird in die entsprechend Methode der Lichtanimation gewechselt und jedes mal das Licht der acht LEDs nach einem Muster angepasst. Daraufhin wird in die ausgewählte Methode der Bewegungsform gewechselt und über den CAN Bus Motorwerte übermittelt. Hierbei wird ebenfalls nach einem bestimmten Muster vorgegangen, indem erst bei der Überschreitung von Schwellwerten der Odometrie Kommandos gesetzt werden. In der darauffolgenden Methode der Kollisionsvermeidung wird jedes mal von neuem die Umgebung mittels Infrarotsensoren überprüft. Falls ein Objekt den Weg blockiert oder die Bewegungsform abgefahren ist, beendet sich der Torjubel und die State-Machine \texttt{showcaseFSM} übernimmt.
 
-\begin{figure}[H]
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[scale=.7]{celebrationSequence.pdf} 	
+		\caption{Ablaufdiagramm eines Torjubels}
+		\label{fig:celebrationSequence}
+	\end{center}
+\end{figure}
+
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[scale=.3]{cheer_rnd_stage_switch.png} 	
 		\caption{Zufallsfarben, Stufenanimation, abwechselnd aktive LEDs}
@@ -162,10 +171,10 @@ In der Ausführung werden in zeitlichen Schritten immer wieder die Funktionen zu
 	\end{center}
 \end{figure}
 
-In den Abbildungen \ref{fig:cheer_rnd_stage_switch} und \ref{fig:cheer_chaser_single_grp} sind implementierte Lichtanimationen dargestellt. Sie sollen den zeitlichen Verlauf (A-D bzw. A-H) von den fünf Animationstypen visualisieren. Die erste Bilderstrecke A-D in Abbildung \ref{fig:cheer_rnd_stage_switch} zeigt einen kontinuierlichen Farbwechsel aller LEDs. Ein rotes stufenartiges Lauflicht wird in der zweiten Bilderstrecke A-D dargestellt, welches im Anschluss zurückgesetzt wird. Die letzte Bilderstrecke A-D beinhaltet ein abwechselndes in-/aktiven Zustand der LEDs mit Phasenverschiebung zur Nachbar-LED.
-Innerhalb der ersten Bilderstrecke A-H in Abbildung \ref{fig:cheer_chaser_single_grp} erfolgt ein klassisches Lauflicht im Kreis. Die zweite Bilderstrecke A-H zeigt ein Lauflicht mit aktiv bleibendem Zustand der LEDs bis zum Zurücksetzung am Ende. Alle Lichtanimationen sind solange aktiv, bis die Bewegungsform beendet ist oder die Kollisionsvermeidung greift.
+In den Abbildungen \ref{fig:cheer_rnd_stage_switch} und \ref{fig:cheer_chaser_single_grp} sind die implementierten Lichtanimationen dargestellt. Sie sollen den zeitlichen Verlauf (A-D bzw. A-H) von den fünf Animationstypen visualisieren. Die erste Bilderstrecke A-D in Abbildung \ref{fig:cheer_rnd_stage_switch} zeigt einen kontinuierlichen Farbwechsel aller LEDs. Ein rotes stufenartiges Lauflicht wird in der zweiten Bilderstrecke A-D dargestellt, welches im Anschluss zurückgesetzt wird. Die letzte Bilderstrecke A-D beinhaltet ein abwechselndes in-/aktiven Zustand der LEDs mit Phasenverschiebung zur Nachbar-LED.
+Innerhalb der ersten Bilderstrecke A-H in Abbildung \ref{fig:cheer_chaser_single_grp} erfolgt ein klassisches Lauflicht im Kreis. Die zweite Bilderstrecke A-H zeigt ein Lauflicht mit aktiv bleibendem Zustand der LEDs bis zur Zurücksetzung. Alle Lichtanimationen sind solange aktiv, bis die Bewegungsform beendet ist oder die Kollisionsvermeidung greift.
 
-\begin{figure}[H]
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[scale=.3]{cheer_chaser_single_grp.png} 	
 		\caption{Lauflichtanimationen des AMiRo}
@@ -173,18 +182,15 @@ Innerhalb der ersten Bilderstrecke A-H in Abbildung \ref{fig:cheer_chaser_single
 	\end{center}
 \end{figure}
 
-Die Implementierung beinhaltet vier unterschiedliche Bewegungsformen, welche in Abbildung \ref{fig:moveForm} dargestellt sind. Eine vor und zurück Bewegung des AMiRo wird in Bild A ausgeführt. Eine zweite Bewegungsform, mit einer vollen Rotation um die eigene Achse, wird in Bild B visualisiert. Die Erweiterung der Rotation ist die einmalige Bewegung im Kreis, welche in Bild C zu sehen ist. In Bild D wird eine Achtform dargestellt, die der AMiRo fahren kann.
+Die Implementierung beinhaltet vier unterschiedliche Bewegungsformen, welche in Abbildung \ref{fig:moveForm} dargestellt sind. Eine vor und zurück Bewegung des AMiRo wird in Bild A ausgeführt. Eine zweite Bewegungsform, mit einer vollen Rotation um die eigene Achse, wird in Bild B visualisiert. Die Erweiterung der Rotation ist die einmalige Bewegung im Kreis, welche in Bild C zu sehen ist. Im letzten Bild D wird eine Achtform dargestellt, die der AMiRo abfährt.
 
-\begin{figure}[H]
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[scale=.6]{moveForm.png} 	
 		\caption{Bewegungsformen während des Torjubels}
 		\label{fig:moveForm}
 	\end{center}
 \end{figure}
-
-%TODO: grafik für ablauf des quellcodes + text anpassen + Seitenaufbau überarbeiten
-
 
 \section[Externes Spieltracking]{Externes Spieltracking\hfill {\normalsize J.D.}} %TODO: Julian D.
 
