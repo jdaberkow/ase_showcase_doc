@@ -5,7 +5,7 @@
 \section[Finite-State-Machine des DiWheelDrive-Microcontrollers]{Finite-State-Machine des DiWheelDrive-Microcontrollers\hfill {\normalsize J.E. \& T.M.}} %TODO: Julian E. & Timo M.
 
 Nachdem die Ladestation erfolgreich angefahren wurde, wird durch eine CAN-Nachricht dem DiWheelDrive-Board signalisiert, dass die weiteren Schritte des Einparkens eingeleitet werden sollen.
-Auf dem Microcontroller wird eine State-Machine ausgeführt, die so lange im \textit{IDLE}-Zustand wartet, bis das Ladeverhalten angetriggert wird (siehe Abb. \ref{fig:uC_statmachine}).
+Auf dem Microcontroller wird eine State-Machine ausgeführt, die so lange im \textit{IDLE}-Zustand wartet, bis das Ladeverhalten angestoßen wird (siehe Abb. \ref{fig:uC_statmachine}).
 Der nächste Zustand ist \textit{MOVE INTO STATION}, welcher in Kapitel \ref{kap:einparken_ladestation} erläutert wird. Ist dies erfolgreich abgeschlossen, so folgen die Zustände \textit{TURN AROUND} und \textit{ADJUST POSITION}, welche in Kapitel \ref{kap:andocken_ladestation} erklärt werden. Anschließend wird der Ladevorgang des AMiRos gestartet und überwacht. Dies geschieht in den Zuständen \textit{INITIATE CHARGING} und \textit{CHARGING}. Diese sind im Kapitel \ref{kap:ladevorgang} beschrieben.
 
 Sollte ein Zustand nicht erfolgreich ausgeführt werden können, so gibt es definierte Routinen, die abermals ausgeführt werden müssen. Sollte die CAN-Nachricht für einen Abbruch des Ladevorganges eingehen, so wird dieser sofort unterbrochen und die State-Machine wird in den \textit{IDLE}-Zustand versetzt.
@@ -19,19 +19,55 @@ Sollte ein Zustand nicht erfolgreich ausgeführt werden können, so gibt es defi
 \end{figure}
 
 \section[Einparken in der Ladestation]{Einparken in der Ladestation\hfill {\normalsize J.E.}}\label{kap:einparken_ladestation} %TODO: Julian E.
-Dem Anfahren der Ladestation der Ladestation folgt das Einparken. Dieser Vorgang ist auf dem DiWheelDrive-Mikrocontroller implementiert, um eine Unabhängigkeit von optionalen Komponenten, wie dem Cognition-Board des AMiRo, herzustellen. Das Ziel des Einparkens in die Ladestation ist es, dass sich der AMiRo bündig in der ``Bucht'' der Ladestation befindet. Am Ende dieses Vorgangs ist der AMiRo so ausgerichtet, dass er der Ladestation zugewandt ist. % Dies ist bedingt durch die ... mit Hilfe des Magnetometers.
+Dem Anfahren der Ladestation der Ladestation folgt das Einparken. Dieser Vorgang ist auf dem DiWheelDrive-Mikrocontroller implementiert, um eine Unabhängigkeit von optionalen Komponenten, wie dem Cognition-Board des AMiRo, herzustellen. Das Ziel des Einparkens in die Ladestation ist es, dass sich der AMiRo bündig in der ``Bucht'' der Ladestation (siehe Abb. \ref{fig:einparken}) befindet. Am Ende dieses Vorgangs ist der AMiRo so ausgerichtet, dass er der Ladestation zugewandt ist.
 
-% TODO: Magnetometer und Station genauer beschreiben.
+\subsection{Vermessung des Magnetometers}
+Im Rahmen dieses Projektes wurde das Magnetometer des AMiRo untersucht, um festzustellen, ob es zum Detektieren der Ladestation und anschließendem Einparken geeignet ist.
+Bei dem Magnetometer handelt es ich um das HMC5883L-Board von Honeywell.
+Die Messreihen wurden wie folgt angefertigt. Der AMiRo wurde mit der Vorderseite nach Norden ausgerichtet. Dies definieren wir als $0^\circ$. Nun beginnt der AMiRo eine Rotation in positiver Richtung. In etwa $10^\circ$-Abständen werden die Sonsordaten des Magnetometers erfasst und ausgegeben. Das Magnetometer verfügt über drei Achsen. Die magnetische Flussdichte entlang der Achsen ist über eine Schnittstelle des DiWheelDrive in $\mu$Gauss abrufbar. Der Verlauf einer solchen Messung ist in \ref{fig:no-station} zu sehen.
+Grafik \ref{fig:station-2-90} zeigt die Messdaten für die Situation, in der sich die Ladestation etwa zwei Zentimeter und $90^\circ$ von der Ausgangsposition des AMiRos befindet.
+Abbildung \ref{fig:station-0-90} stellt dar, dass es zu maximal negativen Messdaten kommen kann, wenn sich der AMiRo direkt an der Station befindet. Dies kann umgangen werden, indem maximal negative Messwerte als maximal positive angesehen werden.
 
-Die Ausgangssituation ist, dass sich der AMiRo in einem Abstand von ein bis zwei Zentimetern vom Magneten der Ladestation befindet. Nun wird ein globaler Scan mit Hilfe des Magnetometers durchgeführt, d.h. der AMiRo dreht sich um die eigene Achse und nimmt währenddessen neue Werte mit dem Magnetometer auf. Der Winkel, unter dem der maximale Sensorwert des Magnetometers gemessen wurde, wird gespeichert. Wurde eine vollständige $360^\circ$ Drehung abgeschlossen, richtet sich der AMiRo zu dem Winkel aus, unter dem der maximale Ausschlag des Magnetometers gemessen wurde. Anschließend beginnt eine Vorfährts-Trajektorie bis ein Hindernis erkannt wurde. Die Hinderniserkennung erfolgt mit Hilfe der Infrarot-Ringsensoren und der Odometrie. Die reine Hinderniserkennung nur mit Hilfe der Ringsensoren ist problematisch, da die Ladestation mit schwarzen Klebestreifen versehen ist, die durch die Infrarotsensoren kaum erkennbar sind. %TODO: mehr zu Odometrie
+Solche Messreihen wurden für verschiedene Abstände und Positionen der Ladestation aufgenommen. Das Resultat dieser Messungen ist, dass die Ladestation nur innerhalb von ein bis zwei Zentimetern vom AMiRo erkennbar ist. Außerdem kann sie nur erkannt werden, wenn der AMiRo ihr zugewandt ist. Dies erklärt sich dadurch, dass das Magnetometer im vorderen Bereich des AMiRo verbaut ist. Ein Erkennen der Station im Vorbeifahren ist also nicht möglich.
+
+Die Implementierung des Einparkens beschränkt sich auf die X-Achse des Magnetometers. Diese liefert einen maximalen Ausschlag, wenn der AMiRo der Ladestation zugewandt ist (siehe \ref{fig:station-2-90}). Die Z-Achse liefert lediglich einen kleinen Ausschlag. Die magnetische Flussdichte der Y-Achse verläuft im Umfeld des Winkels der Ladestation von einem maximal positiven Wert zu einem maximal negativen Wert. Dieser Nulldurchgang ist schwieriger zu detektieren.
+
+% Negative Werte
+% herausrechnen -> Tagesabhängig
+% Dies ist bedingt durch die ... mit Hilfe des Magnetometers. Deswegen AMiRo vorfährts einparken
+%TODO: Magnetometer und Station genauer beschreiben, Bezug auf x-Achse
+% Detektion nicht im vorbeifahren möglich
+% Magnet vorne, auch nur vorne mag Flussdichte messbar
+% Kurvenverlauf für Achsen
+%TODO: Magnetometer-Typ
+
+\begin{figure}
+	\subfigure[]{\includegraphics[width=0.7\textwidth]{no-station.pdf}\label{fig:no-station}}
+	\subfigure[]{\includegraphics[width=0.7\textwidth]{station-2-90.pdf}\label{fig:station-2-90}}
+	\subfigure[]{\includegraphics[width=0.7\textwidth]{station-0-90.pdf}\label{fig:station-0-90}} 
+	\caption{}
+	\label{fig:messdaten}
+\end{figure}
+
+\subsection{Ablauf des Einparkens}
+In der angenommenen Ausgangssituation befindet sich der AMiRo in einem Abstand von ein bis zwei Zentimetern vom Magneten der Ladestation. Nun wird ein globaler Scan mit Hilfe des Magnetometers durchgeführt, d.h. der AMiRo dreht sich um die eigene Achse und nimmt währenddessen kontinuierlich Werte mit dem Magnetometer auf. Der Winkel, unter dem der maximale Sensorwert des Magnetometers gemessen wurde, wird gespeichert. Wurde eine vollständige $360^\circ$ Drehung abgeschlossen, richtet sich der AMiRo zu dem Winkel aus, unter dem der maximale Ausschlag des Magnetometers gemessen wurde. Anschließend beginnt eine Vorfährtstrajektorie bis ein Hindernis erkannt wurde. Die Hinderniserkennung erfolgt mit Hilfe der Infrarot-Ringsensoren und der Odometrie. Die reine Hinderniserkennung nur mit Hilfe der Ringsensoren ist problematisch, da die Ladestation mit schwarzen Klebestreifen versehen ist, die durch die Infrarotsensoren kaum erkennbar sind.
+
+%TODO: mehr zu Odometrie
 
 Nachdem ein Hindernis, beziehungsweise die Ladestation, erreicht wurde, werden die vorderen Ringsensoren überprüft. Liefern diese einen Maximalwert, so wurde die Station erreicht und das Einparken in die Ladestation war erfolgreich. %TODO: welche Sensoren
-Ist dies jedoch nicht der Fall, so ist ein Korrekturschritt nötig. %TODO: Verweise auf Bild?
+Ist dies jedoch nicht der Fall, so ist ein Korrekturschritt nötig (vgl. \ref{fig:einparken}).
 Um festzustellen in welche Richtung die Trajektorie versetzt werden muss, wird ermittelt, ob sich der AMiRo auf der rechten oder linken Seite der Bucht befindet. Dies wird wiederum mit Hilfe des Magnetometers bestimmt. Zunächst wird eine Rotation nach Links vorgenommen und es wird die magnetische Flussdichte gemessen. Danach wird die vorherige Rotation rückgängig gemacht und eine Rotation nach Rechts im selben Winkel ausgeführt. Es wird ebenfalls die magnetische Flussdichte gemessen und zur Ausgangsposition zurück rotiert. Nun werden diese beiden Werte mit einander verglichen. Ist der Wert der linken Messung größer als der, der rechten, so muss sich der AMiRo links von der Einbuchtung befinden. Dies gilt analog im umgekehrten Fall.
 
 Nun kann der Korrekturschritt vollzogen werden. Es folgt eine $90^\circ$-Rotation gemäß der Korrekturrichtung, eine kurze Vorfährtstrajektorie und eine Rückrotation um $90^\circ$ entgegengesetzt der Korrekturrichtung. Somit wurde die Trajektorie versetzt. Nun wird beginnt wiedermals eine Vorfährttrajektorie bis ein Hindernis erkannt wurde. Dieses Verhalten wird insgesamt dreimal wiederholt. Wurde bis dahin die Ladestation nicht erreicht, so wird die Kontrolle an die höhere Logik übergeben.
 
 Während der Ermittlung des Korrekturrichtung und der Korrektur ist es möglich, dass der AMiRo bereits die Zielposition erreicht hat. Dies ist darauf zurückzuführen, dass die vordere Gehäuseschraube des AMiRo vom Magneten der Ladestation angezogen wird. Deswegen werden zwischen den einzelnen Schritten immer wieder die Ringsensoren überprüft und ermittelt, ob diese bereits einen maximalen Ausschlag liefern.
+
+\begin{figure}
+	\subfigure[Ladestation]{\includegraphics[width=0.45\textwidth]{Ladestation-croped.jpeg}\label{fig:ladestation}} 
+	\subfigure[Einparken]{\includegraphics[width=0.45\textwidth]{Einparken.jpeg}\label{fig:einparken}} 
+	\caption{Bild (a) zeigt die Ladestation mit der Einbuchtung, den zwei Kontakten, sowie dem Magneten in der Mitte. Bild (b) zeigt einen fehlgeschlagenen Einparkversuch, der einen Korrekturschritt benötigt.}
+	\label{fig:ladestation-einparken}
+\end{figure}
 
 \section[Andocken an die Ladestation]{Andocken an die Ladestation\hfill {\normalsize T.M.}}\label{kap:andocken_ladestation} %TODO: Timo M.
 Nachdem der AMiRo erfolgreich in der Ladestation eingeparkt ist werden anschließend die Ladepins auf der Rückseite des Roboters zu den Ladekontakten der Station ausgerichtet. Dabei ist es notwendig, dass alle Pins die Kontakte berühren, da es bei Stromspitzen sonst zu Schäden am AMiRo kommen könnte.
@@ -94,4 +130,3 @@ Nachdem die Akkus des AMiRos voll geladen sind wird der DiWheelDrive-Ladepfad de
 %	- Auslesen der Ladestatus der Akkus (\% und Zeit bis geladen)
 %	- Überwachen der Odometrie 
 %		- falls sich der AMiRo aufgrund von äußeren Einwirkungen bewegen sollte -> Abbruch des Ladevorgangs und Position erneut justieren
-

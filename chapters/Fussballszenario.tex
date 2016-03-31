@@ -46,7 +46,7 @@ Einzelne Zustände haben auch direkte Anweisungen, die den aktuellen Zustand wec
 
 Die State-Machine selbst ist in Abb. \ref{fig:fsm-amiro} dargestellt. Nach dem Start ist zunächst der \texttt{idle} Zustand aktiv. Dieser wartet lediglich auf Kommandos und stellt sicher, dass sich der AMiRo nicht bewegt, sondern ruhig auf seiner Position abwartet.
 
-Um das Spiel zu starten, muss eine Nachricht vom Host-PC an die AMiRos geschickt werden.Der aktuelle Zustand wechselt dann auf \texttt{startScenario}. Hier können Initialisierungen vorgenommen werden, die notwendig sind, damit der Roboter das Spiel antreten kann. In der derzeitigen Implementierung werden beispielsweise die Teamfarben auf den oberen LEDs des AMiRos gesetzt. Eine mögliche Erweiterung des Szenarios wäre beispielsweise, dass die Spieler auch bestimmte Positionen auf dem Spielfeld einnehmen.
+Um das Spiel zu starten, muss eine Nachricht vom Host-PC an die AMiRos geschickt werden. Der aktuelle Zustand wechselt dann auf \texttt{startScenario}. Hier können Initialisierungen vorgenommen werden, die notwendig sind, damit der Roboter das Spiel antreten kann. In der derzeitigen Implementierung werden beispielsweise die Teamfarben auf den oberen LEDs des AMiRos gesetzt. Eine mögliche Erweiterung des Szenarios wäre beispielsweise, dass die Spieler auch bestimmte Positionen auf dem Spielfeld einnehmen.
 
 Ist die Initialisierung abgeschlossen, wechselt die State-Machine in den \texttt{ready} Zustand. In diesem Zustand bleibt die FSM solange, bis der Host-PC das Spiel offiziell startet, doch abbricht oder bis die Ladestrategie das Ladeverhalten anstößt.
 
@@ -91,8 +91,36 @@ Der aktuelle Ladezustand kann wird bei jedem Durchlauf der FSM über den CAN Bus
 \section[Realisierung der einzelnen Spielelemente]{Realisierung der einzelnen Spielelemente\hfill {\normalsize ?.?.}}%TODO: Besseren Sectiontitel
 
 \subsection[Lokalisation des Balls]{Lokalisation des Balls\hfill {\normalsize J.E.}} %TODO: Julian E.
+\label{subsection:locateBall}
+
+Die Lokalisation des Spielballs erfolgt mit Hilfe der Kamera des AMiRos. Der Roboter rotiert in positiver Richtung bis der Ball im Kamerabild detektiert wurde oder eine $360^\circ$ Drehung vollzogen wurde. Die Detektion des Balls erfolgt mit einer einfachen Blob-Detektion. Hierfür wird nicht der \textit{SimpleBlobDetector} der Programmbibliothek OpenCV benutzt, sondern eine eigene Implementierung. Die genaue Begründung ist im nächsten Unterabschnitt \ref{subsection:moveToBall} dargelegt. Um Ressourcen zu sparen wird zunächst das Kamera-Bild auf den unteren Teil beschränkt, da sich nur hier der Ball befinden kann. Außerdem verhindert dies die Detektion von Blobs außerhalb des Spielfelds.
+
+Zunächst muss das Kamerabild segmentiert werden, d.h. der Ball muss vom Rest des Bilds unterschieden werden.
+Dies geschieht an Hand seiner Farbe. Es werden alle Pixel, die einen Blauanteil von mindestens 80, ein Verhältnis von Blau zu Grün von mindestens $1,1$ und ein Verhältnis von Blau zu Rot von mindestens $2,5$ aufweisen, als zum Ball zugehörig angesehen.
+Wurde mindestens ein Pixel dem Ball zugeordnet war die Detektion erfolgreich. Nun können weitere Eigenschaften des detektierten Balls berechnet werden.
+Zur Ermittelung des Ballmittelpunkts wird das arithmetische Mittel über die Koordinaten der Ball-Pixel gebildet.
+Die Größe des Balls wird zunächst separat in horizontaler und vertikaler Ausrichtung ermittelt. Dies ist jeweils die Differenz zwischen dem Maximum und Minimum der Koordinaten der zum Ball zugehörigen Pixel. Die Größe des Balls wird dann aus dem Durchschnitt der horizontalen und vertikalen Größe ermittelt.
 
 \subsection[Anfahren des Balls]{Anfahren des Balls\hfill {\normalsize J.E.}} %TODO: Julian E.
+\label{subsection:moveToBall}
+
+Das Anfahren des Balls beruht ebenfalls auf der in Unterabschnitt \ref{subsection:locateBall} vorgestellten Detektion. Diese liefert Größe und Position des Balls im Kamerabild. Bei einer initialen Detektion wird primär auf die festgestellte Größe des Balls Bezug genommen. Ist der Ball zu groß, wird von ihm zurückgewichen und das Anfahren des Balls gilt als erfolgreich.
+
+Ist im anderen Fall der Ball nicht zu nah, so wird in einem iterativen Vorgang der Abstand zum Ball verringert und währenddessen die Trajektorie korrigiert, sodass der Ball sich in der Mitte des Kamerabilds befindet. Die Rotations- und Vorwärtsgeschwindigkeit sind lineare Funktionen der Abweichung des Balls von der Mitte des Kamerabildes beziehungsweise der Größe des Balls.
+Wird während des Anfahren des Balls ein Hindernis erkannt, so wird die Trajektorie einfach nach rechts oder links versetzt.
+
+Wieso sich auf eine eigene Implementierung, statt auf die in der OpenCV enthaltenen Blobdetektion verlassen wurde, soll in diesem Absatz dargelegt werden.
+Der \textit{SimpleBlobDetector} der OpenCV-Programmbibliothek erkennt häufig im Blob des Balls mehrere kleine Blobs. Dies ist besonders problematisch, wenn sich der AMiRo nah am Ball befindet (vgl. \ref{fig:moveToBall-close}).
+Durch Anpassung der Parameter kann der Blobdetektor so konfiguriert werden, dass kleine Blobs miteinander verschmolzen werden.
+Gleichzeitig verwirft er auch Blobs mit zu geringer Größe. Da der Ball und seine Größe zuverlässig sowohl bei großer Entfernung (kleiner Blob, siehe \ref{fig:moveToBall-far}) und geringer Entfernung (großer Blob, siehe \ref{fig:moveToBall-close}) erkannt werden müssen, wurde eine eigene Blobdetektion implementiert. Diese verfügt über das Vorwissen, dass nur ein Blob existiert. Ein weiterer Vorteil ist, dass sie aufgrund geringerer Komplexität und Flexibilität performanter arbeitet. Dies ist besonders während des Anfahren des Balls wichtig, da sonst Kamerabild und Realität zunehmend divergieren.
+Ein weiterer, jedoch nicht getesteter, Ansatz ist, dass Bild zu erodieren und abermals zu dilatieren. Diese morphologische Operation, genannt \textit{Closing}, schließt Lücken im Vordergrund. Diese Operationen sind jedoch aufwendig und würden ebenfalls zu Problemen beim Anfahren des Balls führen.
+
+\begin{figure}
+	\subfigure[Weit entfernter Ball]{\includegraphics[width=0.45\textwidth]{moveToBall-far.png}\label{fig:moveToBall-far}} 
+	\subfigure[Naher Ball]{\includegraphics[width=0.45\textwidth]{moveToBall-close.png}\label{fig:moveToBall-close}} 
+	\caption{Visualisierung der implementierten Blobdetektion, die beim Lokalisieren und Anfahren des Balls verwendet wird. Die Blobdetektion von OpenCV würde in Situationen wie (b) mehrere Blobs erkennen.}
+	\label{fig:moveToBall}
+\end{figure}
 
 \subsection[Lokalisation des gegnerischen Tores]{Lokalisation des gegnerischen Tores\hfill {\normalsize T.M.}} %TODO: Timo M.
 
@@ -148,6 +176,9 @@ Sollten sich auf beiden Seiten Wände befinden, so ist ein Schuss zu gefährlich
 %- Schießen des Balles durch kurzes Ansteuern beider Motoren 
 
 \subsection[Beiseite Fahren]{Beiseite Fahren\hfill {\normalsize J.E.}} %TODO: Julian E.
+Im Fall, dass ein AMiRo den Ball nicht lokalisieren kann, könnte dies darauf zurückgeführt werden, dass sich der andere AMiRo in der Sichtlinie von AMiRo und Spielball befindet. Um diese Situation aufzulösen, muss der die Sicht blockierende AMiRo die Position wechseln.
+Dieses Verhalten ist so implementiert, dass es das Ziel des AMiRos ist, eine gewisse Distanz zurückzulegen. Diese Distanz beträgt 50cm und wird anhand der Odometrie überprüft.
+Wird während des Positionswechsels ein Hindernis erkannt, wird ermittelt auf welcher Seite es sich befindet und eine Rotation von $135^\circ$ vom Hindernis weg durchgeführt.
 
 \subsection[Torjubel]{Torjubel\hfill {\normalsize A.G.}} %TODO: Andi G.
 
