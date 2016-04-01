@@ -24,17 +24,17 @@ Das Spread Toolkit hilft dabei einen Nachteil der allgemeinen Publish-Subscriber
 
 Neben der Plattform-übergreifenden Kommunikation werden RSB und Spread zusätzlich auch für Interprozess-Kommunikation auf den AMiRos und auf dem Host-PC eingesetzt. Wie in Abb. \ref{fig:spread} zu sehen ist, laufen auf beiden AMiRos die drei gleichen Softwarekomponenten. Die State-Machine (\texttt{FSM}) steuert das Verhalten und die Kommunikation. Die \texttt{locateAndShoot} Komponente stellt die Verhaltenseinheiten für das Szenario zur Verfügung und die \texttt{SearchCharging} Komponente erlaubt aus dem Szenario aus die Lokalisation und das Anfahren an die Ladestation. Diese drei Komponenten kommunizieren über den internen Spread, der auf der internen Localhost Schnittstelle auf dem Port 4806 läuft (siehe dazu auch Anhang \ref{sec:spread-config}).
 
-Die Kommunikation zwischen den AMiRos selbst und dem Host läuft über einen weiteren Spread-Daemon, der mit einer anderen Konfiguration geladen wird, die W-LAN Schnittstelle nutzt und auf Port  4803 hört und sendet (siehe ebenfalls Abschnitt \ref{sec:spread-config}).
-
-Die W-LAN Verbindung wurde durch einen eigenen Router realisiert und erlaubt so die feste Adresszuweisung für die drei Endpunkte, damit die Spread-Konfiguration darauf zurückgreifen kann. Die Einzelheiten können der W-LAN Konfiguration im Anhang (Abschnitt \ref{sec:wlan-config}) entnommen werden.
-\begin{figure}
+\begin{figure}[h]
 	\begin{center}
-		\includegraphics[scale=.65]{spread_communication.png} 	
+		\includegraphics[scale=.65]{spread_communication.png} 
 		\caption{Spread-Kommunikation}
 		\label{fig:spread}
 	\end{center}
 \end{figure}
 
+Die Kommunikation zwischen den AMiRos selbst und dem Host läuft über einen weiteren Spread-Daemon, der mit einer anderen Konfiguration geladen wird, die W-LAN Schnittstelle nutzt und auf Port  4803 hört und sendet (siehe ebenfalls Abschnitt \ref{sec:spread-config}).
+
+Die W-LAN Verbindung wurde durch einen eigenen Router realisiert und erlaubt so die feste Adresszuweisung für die drei Endpunkte, damit die Spread-Konfiguration darauf zurückgreifen kann. Die Einzelheiten können der W-LAN Konfiguration im Anhang (Abschnitt \ref{sec:wlan-config}) entnommen werden.
 
 \subsection[Finite-State-Machine]{Finite-State-Machine\hfill {\normalsize H.O.}} \label{cha:Finite-State-Machine}
 Die State-Machine regelt das Verhalten der einzelnen AMiRos. Jedes Verhalten wird in kleinstmögliche Einheiten unterteilt, die dann einzeln angesprochen und überall wiederverwendet werden können. Nach der Initialisierung aller RSB-Komponenten und Variablen wird im Programm die State-Machine gestartet.
@@ -54,7 +54,15 @@ Wird das Spiel gestartet, ist der \texttt{waitForTurn} State aktiv. Dieser warte
 Ist der AMiRo selbst an der Reihe, um seinen Spielzug zu machen, beginnt er damit im \texttt{localizeBall} State. Er versucht den Ball zu lokalisieren und wechselt bei erfolglosem Versuch in den \texttt{waitForOtherAmiroMove} Zustand, in dem eine Nachricht an den Gegner geschickt wird, damit dieser sich bewegt. Nach Bestätigung des Gegners, dass dieser seine Position geändert hat, wechselt die FSM wieder in den \texttt{localizeBall} Zustand und versucht erneut die Lokalisierung des Balls. Bei Erfolg wird dann zu \texttt{moveToBall} gewechselt.
 
 Die folgenden Zustände verlaufen sequenziell und können daher zusammenfassend beschrieben werden:
-\texttt{moveToBall}, \texttt{findGoal}, \texttt{moveToShootingPosition}, \texttt{shootBall}. Jeder dieser Zustände verschickt ein Event an das \texttt{locateAndShoot} Programm, wartet auf erfolgreiche Rückmeldung und wechselt dann in den jeweils nachfolgenden State. Wie auch in den meisten Zuständen zuvor, gibt es zusätzlich noch die Möglichkeit, dass das Spiel abgebrochen wird oder der AMiRo laden muss. Dann wird jeweils in den \texttt{cancelScenario} oder in den \texttt{moveToEdge} State gewechelt.
+\texttt{moveToBall}, \texttt{findGoal}, \texttt{moveToShootingPosition} sowie \texttt{shootBall}. Jeder dieser Zustände verschickt ein Event an das \texttt{locateAndShoot} Programm, wartet auf erfolgreiche Rückmeldung und wechselt dann in den jeweils nachfolgenden State. Wie auch in den meisten Zuständen zuvor, gibt es zusätzlich noch die Möglichkeit, dass das Spiel abgebrochen wird oder der AMiRo laden muss. Dann wird jeweils in den \texttt{cancelScenario} oder in den \texttt{moveToEdge} State gewechelt.
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=\textwidth]{Final_FSM_AMiRo.pdf}
+		\caption{Finite-State-Machine}
+		\label{fig:fsm-amiro}
+	\end{center}
+\end{figure}
 
 Nachdem der Ball vom Roboter geschossen wurde, muss zunächst auf eine Bestätigung vom Host-PC gewartet werden, bis der Ball sich nicht mehr bewegt. Erst dann soll das Handle an den anderen AMiRo übergeben werden. Der Host-PC sendet allerdings kontinuierlich ein Signal aus, solange sich der Ball bewegt, die State-Machine wartet sicherheitshalber mehrere Durchgänge in denen keine Nachricht vom Host-PC empfangen werden darf, die eine Ballbewegung signalisiert. Erst dann wird das Handle im nachfolgenden State \texttt{giveHandleToOtherAmiro} übergeben. In diesem Zustand ist ein Hand-Shaking Mechanismus eingebaut, um sicherzustellen, dass der Gegner das Handle auch empfangen hat. Ist das der Fall, wird wieder zurück in den \texttt{waitForTurn} Zustand gewechselt.
 
@@ -71,14 +79,7 @@ Während des Szenarios ist es für die Roboter wichtig, ihren eigenen Ladezustan
 
 Der aktuelle Ladezustand kann wird bei jedem Durchlauf der FSM über den CAN Bus abgefragt und überprüft. Die genaue Ladestrategie wird in Abb. \ref{fig:charging-strategy} verdeutlicht. Fällt die Ladekapazität unter 10\%  wird zunächst überprüft, welchen Ladezustand der andere AMiRo aktuell hat. Liegt dieser unter 15\%, wird das Ladeverhalten gestartet. Fällt die eigene Ladekapazität unter 5\% wird das Ladeverhalten ebenfalls ausgelöst, unabhängig vom Ladezustand des anderen AMiRos. Wird dann eine weitere Grenze von 2\% unterschritten, wird zusätzlich eine Art Notrufsignal vom AMiRo gesendet. Dieses Signal veranlasst einen anderen Roboter, welcher gerade die Ladestation blockiert, aber schon ein bestimmtes Ladelevel erreicht hat, seinen Ladevorgang abzubrechen und die Ladestation frei zu machen.
 
-\begin{figure}
-	\begin{center}
-		\includegraphics[width=\textwidth]{Final_FSM_AMiRo.pdf} 	
-		\caption{Finite-State-Machine}
-		\label{fig:fsm-amiro}
-	\end{center}
-\end{figure}
-\begin{figure}
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[scale=.50]{Charging_Strategy.pdf} 	
 		\caption{Ladestrategie}
@@ -86,8 +87,9 @@ Der aktuelle Ladezustand kann wird bei jedem Durchlauf der FSM über den CAN Bus
 	\end{center}
 \end{figure}
 
+\section[Realisierung der einzelnen Spielelemente]{Realisierung der einzelnen Spielelemente\hfill {\normalsize J.D.}}
 
-\section[Realisierung der einzelnen Spielelemente]{Realisierung der einzelnen Spielelemente\hfill {\normalsize ?.?.}}%TODO: Besseren Sectiontitel
+Jene in Abbildung \ref{fig:fsm-amiro} dargestellten Zustände, die für das Spielgeschehen von entscheidender Bedeutung werden in dem folgenden Kapitel näher erläutert. Im Speziellen sind dies die Zustände \texttt{localizeBall}, \texttt{moveToBall}, \texttt{findGoal}, \texttt{moveToShooting\-Position} sowie \texttt{shootBall}. Zudem wird auf die Umsetzung des Torjubels eingegangen, der dann auftritt, wenn einer der AMiRos ein vom Host-PC bestätigtes reguläres Tor erzielt hat.
 
 \subsection[Lokalisation des Balls]{Lokalisation des Balls\hfill {\normalsize J.E.}} %TODO: Julian E.
 \label{subsection:locateBall}
@@ -225,13 +227,13 @@ Die Implementierung beinhaltet vier unterschiedliche Bewegungsformen, welche in 
 
 \section[Externes Spieltracking]{Externes Spieltracking\hfill {\normalsize J.D.}} %TODO: Julian D.
 
-Zusätzlich zu den beiden AMiRos, die in dem Fußballszenario agieren, sorgt ein zusätzlicher Host-PC für die Koordination des Spielablaufs. Dazu kommuniziert auch er, wie bereits in Kapitel \ref{sec:szenario_koordination} beschrieben, über eine RSB-/Spreadverbindung sowohl intern über zwei Prozesse hinweg, als auch extern zu den AMiRos. Zusätzlich ist eine handelsübliche Webcam in einem geneigten Winkel rund 2 Meter über dem Spielfeld angebracht, um die Erkennung und Aufbereitung entscheidender Spielelemente mithilfe von Bildverarbeitungsverfahren ermöglichen zu können.
+Zusätzlich zu den beiden AMiRos, die in dem Fußballszenario agieren, sorgt ein zusätzlicher Host-PC für die Koordination des Spielablaufs. Dazu kommuniziert auch er, wie bereits in Kapitel \ref{sec:szenario_koordination} beschrieben, über eine RSB-/Spreadverbindung sowohl intern über zwei Prozesse hinweg, als auch extern zu den AMiRos. Zusätzlich ist eine handelsübliche Webcam in einem geneigten Winkel etwa 2 Meter über dem Spielfeld angebracht, um die Erkennung und Aufbereitung entscheidender Spielelemente mithilfe von Bildverarbeitungsverfahren ermöglichen zu können.
 
-Die beiden intern kommunizierenden Prozesse lauten \texttt{localizationShowcase} und \texttt{processShowcase}. Während \texttt{localizationShowcase} das Kamerabild abgreift und die Detektion von Markern übernimmt, analysiert \texttt{processShowcase} das Spielgeschehen mithilfe einer Blobdetektion und zeigt zudem die grafische Benutzeroberfläche an. Neben dem Vorteil der besseren Wartbarkeit, ist der Grund für die Unterteilung in zwei seperate Prozesse die Unvereinbarkeit der verwendeten Softwarebibliotheken ARToolKit und OpenCV.
+Die beiden intern kommunizierenden Prozesse lauten \texttt{localizationShowcase} und \texttt{processShowcase}. Während \texttt{localizationShowcase} das Kamerabild abgreift und die Detektion von Markern übernimmt, analysiert \texttt{processShowcase} das Spielgeschehen mithilfe einer Blobdetektion und zeigt zudem die grafische Benutzeroberfläche an. Neben dem Vorteil der besseren Wartbarkeit, ist die Unvereinbarkeit der verwendeten Softwarebibliotheken ARToolKit und OpenCV ein Grund für die Unterteilung in zwei seperate Prozesse.
 
 \subsection[Markerdetektion mit dem ARToolKit]{Markerdetektion mit dem ARToolKit\hfill {\normalsize J.D.}} %TODO: Julian D.
 
-Das ARToolKit ist eine Open-Source-basierte Softwarebibliothek, die aus dem Bereich der Augmented Reality stammt. Während die möglichen Anwendungsszenarien des ARToolKits vielzählig sind, liegt eine seiner Kernkompetenzen in der schnellen sowie zuverlässigen Detektion und Lokalisation von vordefinierten Markern in einem Videostream. Beispiele für die verwendeten Marker sind in Abbildung \ref{fig:art_marker} dargestellt. Die Detektion erfolgt dabei sowohl rotations- als auch translationsinvariant und liefert dem Benutzer eine Bildkoordinate sowie einen Rotationswinkel.
+Das ARToolKit ist eine Open-Source-basierte Softwarebibliothek, die aus dem Bereich der Augmented Reality stammt. Während die möglichen Anwendungsszenarien des ARToolKits vielzählig sind, liegt eine seiner Kernkompetenzen in der schnellen sowie zuverlässigen Detektion und Lokalisation von vordefinierten Markern in einem Video\-stream. Beispiele für die verwendeten Marker sind in Abbildung \ref{fig:art_marker} dargestellt. Die Detektion erfolgt dabei sowohl rotations- als auch translationsinvariant und liefert dem Benutzer eine Bildkoordinate sowie einen Rotationswinkel.
 
 \begin{figure}
 	\begin{center}
@@ -249,7 +251,7 @@ Das ARToolKit ist eine Open-Source-basierte Softwarebibliothek, die aus dem Bere
 	\end{center}
 \end{figure}
 
-Abbildung \ref{fig:marker_detection} ist ein Beispielbild der verwendeten Webcam und es zeigt die Anwendungsgebiete der Markerdetektion im Rahmen des Fußballszenarios. Zum einen sind vier Marker in den jeweiligen Eckpunkten des Schaukastens angebracht. Anhand dessen soll im weiteren Verlauf eine Vorselektierung des Bildausschnittes ermöglicht werden um die Bildverarbeitung zum Einen beschleunigen und zum Anderen die Fehldetektion von Objekten außerhalb des Glaskastens verhindern zu können. Außerdem befinden sich Marker auf der Oberseite der AMiRos. Diese haben im aktuellen Zustand keinen praktischen Nutzen für die Spielmechanik an sich, ermöglichen es der grafischen Benutzeroberfläche aber, die aktuelle Position der AMiRos ansprechend zu visualisieren. Zusätzlich sind einige Marker auf DIN A4 Papier aufgetragen. Diese lösen auf dem Host-PC vordefinierte Events aus und ermöglichen dem Anwender dadurch eine direkte Interaktion ohne die Zuhilfenahme von klassischen Eingabegeräten wie Maus oder Tastatur.
+Abbildung \ref{fig:marker_detection} ist ein Beispielbild der verwendeten Webcam und es zeigt die Anwendungsgebiete der Markerdetektion im Rahmen des Fußballszenarios. Zum einen sind vier Marker in den jeweiligen Eckpunkten des Schaukastens angebracht. Anhand dessen soll im weiteren Verlauf eine Vorselektierung des Bildausschnittes ermöglicht werden um die Bildverarbeitung zum einen beschleunigen und zum anderen die Fehldetektion von Objekten außerhalb des Glaskastens verhindern zu können. Außerdem befinden sich Marker auf der Oberseite der AMiRos. Diese haben im aktuellen Zustand keinen praktischen Nutzen für die Spielmechanik an sich, ermöglichen es der grafischen Benutzeroberfläche aber, die aktuelle Position der AMiRos ansprechend zu visualisieren. Zusätzlich sind einige Marker auf DIN A4 Papier aufgetragen. Diese lösen auf dem Host-PC vordefinierte Events aus und ermöglichen dem Anwender dadurch eine direkte Interaktion ohne die Zuhilfenahme von klassischen Eingabegeräten wie Maus oder Tastatur.
 
 \begin{figure}
 	\begin{center}
@@ -259,7 +261,7 @@ Abbildung \ref{fig:marker_detection} ist ein Beispielbild der verwendeten Webcam
 	\end{center}
 \end{figure}
 
-Die Einbettung des ARToolKits wird im Rahmen dieses Projektes durch das Programm \texttt{localizationShowcase} realisiert. Dieses bedient sich zunächst der Videoschnittstelle Video4Linux um die Bilddaten der Webcam abzugreifen. In einem nächsten Schritt wird eine neue Instanz des RSB-Datentyps \texttt{trackingImage} angelegt. Der Prototyp dieses Datentyps beinhaltet sowohl den Standardtyp \texttt{Image} aus der RSB-Bibliothek, als auch eine Liste von Elementen des Typs \texttt{Pose2D} welche jeweils die Felder \texttt{X}, \texttt{Y}, \texttt{orientation} und \texttt{id} beinhalten. Die Kombination dieser beiden Typen bringt den Vorteil mit sich, dass Bild- und Trackingdaten bereits synchronisiert auf der Seite des Empfängers ankommen, ohne dass dieser weitere Ressourcen für die Synchronisation benötigen würde.
+Die Einbettung des ARToolKits wird im Rahmen dieses Projektes durch das Programm \texttt{localizationShowcase} realisiert. Dieses bedient sich zunächst der Videoschnitt\-stelle Video4Linux um die Bilddaten der Webcam abzugreifen. In einem nächsten Schritt wird eine neue Instanz des RSB-Datentyps \texttt{trackingImage} angelegt. Der Prototyp dieses Datentyps beinhaltet sowohl den Standardtyp \texttt{Image} aus der RSB-Bibliothek, als auch eine Liste von Elementen des Typs \texttt{Pose2D} welche jeweils die Felder \texttt{X}, \texttt{Y}, \texttt{orientation} und \texttt{id} beinhalten. Die Kombination dieser beiden Typen bringt den Vorteil mit sich, dass Bild- und Trackingdaten bereits synchronisiert auf der Seite des Empfängers ankommen, ohne dass dieser weitere Ressourcen für die Synchronisation benötigen würde.
 
 Für jedes abgegriffene Videobild wird also ein \texttt{trackingImage}-Objekt erzeugt, welches zusätzlich zum unveränderten Kamerabild eine Liste von erfolgreichen Markerdetektionen beinhaltet. Dieses Objekt wird anschließend über einen frei konfigurierbaren RSB-Scope an den zweiten Prozess des Host-PCs gesendet.
 
@@ -267,7 +269,7 @@ Für jedes abgegriffene Videobild wird also ein \texttt{trackingImage}-Objekt er
 
 Empfangen wird das versendete \texttt{trackingImage}-Objekt von dem zweiten Prozess \texttt{processShowcase}. Dieser übernimmt neben der Koordinierung des Spielgeschehens zusätzlich die Aufgabe der Extraktion wichtiger Spielelemente aus dem Videobild und bindet zu diesem Zweck die freie Bildverarbeitungsbibliothek OpenCV ein.
 
-An erster Stelle steht dabei die perspektivische Transformation des Bildes. Sollten vom ARToolKit alle vier Spielfeldmarker detektiert worden sein, so wird das Bild unter Verwendung von OpenCV so transformiert, dass die vier Eckpunkte des Spielfeldes auch die Eckpunkte des angezeigten Bildes darstellen. Zusätzlich wird die Größe des Bildes an dieser Stelle reduziert, um die Last des Prozessors zu minimieren. Dies ist möglich, da die folgenden Methoden im Gegensatz zur Markerdetektion in der Lage sind, auch mit wesentlich geringeren Auflösungen stabile Ergebnisse zu liefern.
+An erster Stelle steht dabei die perspektivische Transformation des Bildes. Sollten vom ARToolKit alle vier Spielfeldmarker detektiert worden sein, so wird das Bild unter Verwendung von OpenCV so transformiert, dass die vier Eckpunkte des Spielfeldes auch die Eckpunkte des angezeigten Bildes darstellen. Zusätzlich wird die Größe des Bildes an dieser Stelle reduziert, um die Last des Prozessors zu minimieren. Dies ist möglich, da die folgenden Bildverarbeitungsmethoden im Gegensatz zur Markerdetektion in der Lage sind, auch mit  geringeren Auflösungen stabile Ergebnisse zu liefern.
 
 Um die Positionen von Torpfosten sowie Ball erfassen zu können, kommt im Folgenden das Verfahren der Blobdetektion zum Einsatz. Zunächst werden dafür drei Grauwertbilder generiert, die jeweils starke Ausschläge der Farbkanäle Grün, Blau und Rot visualisieren. Diese \glqq starken Ausschläge\grqq~werden dabei nicht durch absolute Werte definiert, sondern dadurch, dass der Wert der entscheidenden Farbe um einen bestimmten Faktor größer sein muss, als die Werte der anderen Farben. In Kombination mit einem Schwellwert, den die Farbe mindestens annehmen muss, wird die Detektion auf diesem Weg robuster gegenüber Veränderungen der allgemeinen Lichtverhältnisse. Abbildung \ref{fig:blob} zeigt die resultierenden Grauwertbilder.
 
@@ -295,7 +297,7 @@ Je nach aktueller Spielsituation (siehe Kapitel \ref{kap:spielkoordination}) wer
 
 Da der Host-PC eine Reihe von Aufgaben besitzt, die für einen reibungslosen Ablauf des Fußballszenarios unumgänglich sind, wird auch dieser maßgeblich über die Regeln einer Finite-State-Machine gesteuert. Die Aufgaben lassen sich unterteilen in die Kalibrierung der Spielfelddetektion, das manuelle Starten eines Ladezyklus' auf einem der AMiRos und schließlich die Koordination des eigentlichen Spieles, samt der dazugehörigen grafischen Visualisierung. 
 
-\begin{figure}[t]
+\begin{figure}[h]
 	\begin{center}
 		\includegraphics[width=\textwidth]{Tracking_FSM.pdf} 	
 		\caption{FSM auf Host-Seite}
@@ -311,7 +313,7 @@ Dieser Zustand ist der Ausgangspunkt für alle weiteren Aktionen, die der Nutzer
 
 Alternativ kann der Nutzer zudem das Wechseln in den Zustand \texttt{INIT\_RECHARGE} anstoßen. Dieser dient dazu, einem der AMiRos den Befehl zum Anfahren einer Ladestation zu übermitteln. Da die AMiRos das Aufladen bei kritischen Akkuständen jedoch auch autark umsetzen, dient diese Funktion lediglich Präsentationszwecken.
 
-Schließlich ist der Nutzer während des \texttt{IDLE}-Zustands in der Lage die State-Machine in den \texttt{SCENARIO\_INIT}-Zustand zu bringen und somit das Starten des Fußballszenarios zu initialisieren. Dabei wird beiden AMiRos die Nachricht \texttt{startScenario} übermittelt und erst fortgefahren wenn beide den Erhalt der Nachricht über einen Handshake-Mechanismus bestätigt haben. Sollte der Nutzer währenddessen nicht per Marker den Befehl zum Abbruch des Spiels gegeben haben, sendet der Host einmalig eine \texttt{yourTurn}-Nachricht zum grünen AMiRo, der daraufhin seinen ersten Zug vollführen darf.
+Schließlich ist der Nutzer während des \texttt{IDLE}-Zustands in der Lage die State-Machine in den \texttt{SCENARIO\_INIT}-Zustand zu bringen und somit das Starten des Fußballszenarios zu initialisieren. Dabei wird beiden AMiRos die Nachricht \texttt{startScenario} übermittelt und erst fortgefahren, wenn beide den Erhalt der Nachricht über einen Handshake-Mechanismus bestätigt haben. Sollte der Nutzer währenddessen nicht per Marker den Befehl zum Abbruch des Spiels gegeben haben, sendet der Host einmalig eine \texttt{yourTurn}-Nachricht zum grünen AMiRo, der daraufhin seinen ersten Zug vollführen darf.
 
 \begin{figure}[t]
 	\begin{center}

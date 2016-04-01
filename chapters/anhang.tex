@@ -40,14 +40,14 @@ AMiRo RSB Konfiguration\\
 
 \begin{lstlisting}
 [plugins.cpp]
-load = rsbspread
+load    = rsbspread
 [transport.inprocess]
 enabled = 0
 [transport.socket]
 enabled = 0
 [transport.spread]
 enabled = 1
-host = 127.0.0.1
+host    = 127.0.0.1
 port    = 4806
 \end{lstlisting}
 
@@ -67,8 +67,8 @@ Allgemeine Konfiguration des Connman Netzwerkmanagers:\\
 /var/lib/connman/<SSID>-psk.config
 \begin{lstlisting}
 [service_wifi_<hash>_managed_psk]
-Type = wifi
-Name = <SSID>
+Type       = wifi
+Name       = <SSID>
 Passphrase = <passphrase>
 \end{lstlisting}
 
@@ -79,23 +79,23 @@ stick1:
 \begin{lstlisting}
 [service_wifi_wifi_74da380645e3_
 61736573686f77636173655f3547_managed_psk]
-Type = wifi
-Name = aseshowcase
+Type       = wifi
+Name       = aseshowcase
 Passphrase = aseshowcase
-Hidden = false
-IPv4 = dhcp
-IPv6 = off
+Hidden     = false
+IPv4       = dhcp
+IPv6       = off
 \end{lstlisting}
 
 stick0:
 \begin{lstlisting}
 [service_wifi_wifi_74da380645f6_
 61736573686f77636173655f3547_managed_psk]
-Type = wifi
-Name = aseshowcase
+Type       = wifi
+Name       = aseshowcase
 Passphrase = aseshowcase
-Hidden = false
-IPv4 = dhcp
-IPv6 = off
+Hidden     = false
+IPv4       = dhcp
+IPv6       = off
 \end{lstlisting}
 
