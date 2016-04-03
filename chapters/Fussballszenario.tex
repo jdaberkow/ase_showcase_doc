@@ -186,8 +186,6 @@ Um das Fußballszenario an die Realität anzulehnen, darf ein gebührender Torju
 
 Bei diesem Torjubel wird der Effekt aus einer Kombination von Bewegungsform und Lichtanimation gebildet. Damit das Verhalten des AMiRo autonom wirkt, wurde je für Bewegung und Licht eine Menge an Elementen implementiert. Vor jedem neuen Torjubel wird jeweils zufällig\footnote{generierte Pseudozufallszahlen} eine Bewegungsform und eine Lichtanimation ausgewählt. Weiterhin werden durch die Pseudozufallszahlen unterschiedliche Parameter bestimmt, wodurch ein noch eigenständigeres Verhalten simuliert wird. Dazu gehören beispielsweise die Bewegungsrichtung bei allen Bewegungsformen, die Laufrichtung der Lichtanimationen und die Farbe. Durch die modulare Implementierung können weitere Ausführungselemente hinzugefügt werden, die wiederum zufällig auswählbar sind.
 
-Das Ablaufdiagramm in Abbildung \ref{fig:celebrationSequence} stellt den Aufbau des Torjubels dar. Sobald die State-Machine \texttt{showcaseFSM} den Torjubel anstößt, wird zunächst ein Lichteffekt und eine Bewegungsform ausgewählt. Diese werden danach in einer Schleife mit anschließender Kollisionsvermeidung ausgeführt. Zu Beginn wird in die entsprechend Methode der Lichtanimation gewechselt und jedes mal das Licht der acht LEDs nach einem Muster angepasst. Daraufhin wird in die ausgewählte Methode der Bewegungsform gewechselt und über den CAN Bus Motorwerte übermittelt. Hierbei wird ebenfalls nach einem bestimmten Muster vorgegangen, indem erst bei der Überschreitung von Schwellwerten der Odometrie Kommandos gesetzt werden. In der darauffolgenden Methode der Kollisionsvermeidung wird jedes mal von neuem die Umgebung mittels Infrarotsensoren überprüft. Falls ein Objekt den Weg blockiert oder die Bewegungsform abgefahren ist, beendet sich der Torjubel und die State-Machine \texttt{showcaseFSM} übernimmt.
-
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[scale=.7]{celebrationSequence.pdf} 	
@@ -195,6 +193,8 @@ Das Ablaufdiagramm in Abbildung \ref{fig:celebrationSequence} stellt den Aufbau 
 		\label{fig:celebrationSequence}
 	\end{center}
 \end{figure}
+
+Das Ablaufdiagramm in Abbildung \ref{fig:celebrationSequence} stellt den Aufbau des Torjubels dar. Sobald die State-Machine \texttt{showcaseFSM} den Torjubel anstößt, wird zunächst ein Lichteffekt und eine Bewegungsform ausgewählt. Diese werden danach in einer Schleife mit anschließender Kollisionsvermeidung ausgeführt. Zu Beginn wird in die entsprechend Methode der Lichtanimation gewechselt und jedes mal das Licht der acht LEDs nach einem Muster angepasst. Daraufhin wird in die ausgewählte Methode der Bewegungsform gewechselt und über den CAN Bus Motorwerte übermittelt. Hierbei wird ebenfalls nach einem bestimmten Muster vorgegangen, indem erst bei der Überschreitung von Schwellwerten der Odometrie Kommandos gesetzt werden. In der darauffolgenden Methode der Kollisionsvermeidung wird jedes mal von neuem die Umgebung mittels Infrarotsensoren überprüft. Falls ein Objekt den Weg blockiert oder die Bewegungsform abgefahren ist, beendet sich der Torjubel und die State-Machine \texttt{showcaseFSM} übernimmt.
 
 \begin{figure}[H]
 	\begin{center}

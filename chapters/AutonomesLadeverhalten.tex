@@ -21,7 +21,7 @@ Soll hingegen eine intelligentere Suchstrategie angewendet werden, wechselt die 
 \begin{figure}[H]
 	\begin{center}
 		\includegraphics[scale=.7]{searchStationFSM.pdf} 	
-		\caption{Finite-State-Machine zur Lokalisation der Ladestation}
+		\caption{Finite-State-Machine zum Anfahren der Ladestation}
 		\label{fig:searchStationFSM}
 	\end{center}
 \end{figure}
@@ -55,7 +55,7 @@ Mit der Bestimmung des nächsten Torpfostens beginnt der Zustand \texttt{goalDet
 
 \begin{figure}[h]
 	\begin{center}
-		\includegraphics[scale=.6]{firstRotationToPost.pdf} 	
+		\includegraphics[scale=.5]{firstRotationToPost.pdf} 	
 		\caption{Ausrichtung des AMiRo zum Tor}
 		\label{fig:firstRotationToPost}
 	\end{center}
@@ -65,18 +65,18 @@ Mit den statischen Informationen der Torpfosten (Position und Dimensionen), kön
 
 Die Distanzberechnung zum Torpfosten ist schematisch in Abbildung \ref{fig:distToPost} dargestellt. Hierbei ist der Winkel $\Theta$ der halbe vertikale Kamerawinkel, da im gesamten Verlauf die relevanten Objekte unterhalb des Horizontes liegen und nur das untere Kamerabild betrachtet wird. Dies spart zum einen Rechenleistung bei der Bildanalyse und zum anderen reduziert es potentiell falsche Objektdetektion. Um die Gegenkathete $B$ zu erhalten, wird die statische Größe des Torpfostens auf die vertikale Bildgröße hochskaliert. Mit Winkel $\Theta$ und Gegenkathete $B$ wird in der Gleichung \ref{eq:distanceToPost} die Ankathete bzw. Distanz $A$ bestimmt.
 
-\begin{equation}
-	A = B \cdot \tan(\Theta)
-	\label{eq:distanceToPost}
-\end{equation}
-
 \begin{figure}[h]
 	\begin{center}
-		\includegraphics[scale=.6]{distanceToPost.pdf} 	
+		\includegraphics[scale=.5]{distanceToPost.pdf} 	
 		\caption{Distanzberechnung zum Torpfosten}
 		\label{fig:distToPost}
 	\end{center}
 \end{figure}
+
+\begin{equation}
+	A = B \cdot \tan(\Theta)
+	\label{eq:distanceToPost}
+\end{equation}
 
 Für die Berechnung der Positionswinkel zu dem Torpfosten wird der Kosinussatz verwendet. Hierzu sind in Abbildung \ref{fig:trianglePost} die zuvor berechneten Distanzen zu den Torpfosten als Ankathete $B$ und Hypotenuse $C$ zu sehen. Der Gegenkathete $A$ ist der Abstand zwischen den Torpfosten und somit eine bekannte Konstante. Mit den drei Seiten können alle Winkel des Dreiecks über den Kosinussatz, den Gleichungen in \ref{eq:anglePost}, berechnet werden. Der relevante Positionswinkel ist hier die Summe $\epsilon = \alpha + \beta$. Steht der AMiRo linksseitig vom Tor, wäre die Winkelsumme $\epsilon = \alpha + \gamma$ (nächster Torpfosten, siehe oben). 
 
@@ -100,7 +100,7 @@ Durch die hinzugekommenen Distanz- und Winkelinformation ist nun eine Positionsa
 
 \begin{equation}
 	\begin{aligned}
-		x\_amiro = x\_tor~+-~~D \cdot \cos(\epsilon) \\\\
+		x\_amiro = x\_tor~+-~~D \cdot \cos(\epsilon) \\
 		y\_amiro = y\_tor~+-~~D \cdot \sin(\epsilon)
 		\label{eq:positionCoords}
 	\end{aligned}
