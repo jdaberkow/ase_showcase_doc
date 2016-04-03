@@ -10,7 +10,17 @@ Ein weiterer Punkt ist die Erstellung eines Sensormodelles für jeden eingesetzt
 
 Ausblick Szenario Koordination...
 
+Für eine flexiblere und umfangreichere Szenariogestaltung sollte die Implementierung einer Verhaltenshierarchie erfolgen. Wichtig ist hierbei vor allem die Vermeidung von Redundanzen der einzelnen Verhaltenselemente, das heißt beispielsweise, dass eine Verhaltenslogik an der Basis der Hierarchie für die Hindernisvermeidung sorgt. Dieses Merkmal muss dann nicht mehrfach für verschiedene komplexere Verhaltensmuster implementiert werden.
+
+Die State-Machine könnte ggf. auch abstrahiert werden und in einer Beschreibungssprache wie SCXML beschrieben werden. Damit wird das Verhalten nochmal speziell von der sonstigen Logik getrennt und kann abstrakter beschrieben werden. Denkbar wäre hierfür auch der Einsatz der im CoR-Lab entwickelten SCXML Engine (https://code.cor-lab.org/projects/rsb-scxml-engine). Einziger Nachteil wäre die Java-Basis auf der dieses Framework aufbaut.
+
 Ausblick RSB und Spread Kommunikation...
+
+Auch im Bereich der Kommunikation ist Optimierungsbedarf vorhanden: Die Strings die zur Verständigung zwischen den AMiRos und dem Host versendet werden sind schlecht wartbar und sollten ggf. ausgelagert und durch eine Kapselung in spezifische RST Datentypen besser abgesichert werden.
+
+Die Spread Konfiguration sollte überprüft werden, damit eine ständige Verbindung zwischen den AMiRos untereinander und mit dem Host sichergestellt werden kann. Somit sollten keine Nachrichten mehr verloren gehen und die Synchronisierung zwischen den einzelnen State-Machines würde abgesichert.
+
+Außerdem könnte das Kommunikationsdesign überdacht werden, dass derzeit noch viele Nachrichten allein über den Scope abstrahiert, wobei der Inhalt der eigentlichen Nachricht oft irrelevant ist. 
 
 Ausblick Realisierung der Spielelemente...
 
