@@ -98,7 +98,7 @@ Die Lokalisation des Spielballs erfolgt mit Hilfe der Kamera des AMiRos. Der Rob
 
 Zunächst muss das Kamerabild segmentiert werden, d.h. der Ball muss vom Rest des Bilds unterschieden werden.
 Dies geschieht an Hand seiner Farbe. Es werden alle Pixel, die einen Blauanteil von mindestens 80, ein Verhältnis von Blau zu Grün von mindestens $1,1$ und ein Verhältnis von Blau zu Rot von mindestens $2,5$ aufweisen, als zum Ball zugehörig angesehen.
-Wurde mindestens ein Pixel dem Ball zugeordnet war die Detektion erfolgreich. Nun können weitere Eigenschaften des detektierten Balls berechnet werden.
+Wird mindestens ein Pixel dem Ball zugeordnet, ist die Detektion erfolgreich. Nun können weitere Eigenschaften des detektierten Balls berechnet werden.
 Zur Ermittelung des Ballmittelpunkts wird das arithmetische Mittel über die Koordinaten der Ball-Pixel gebildet.
 Die Größe des Balls wird zunächst separat in horizontaler und vertikaler Ausrichtung ermittelt. Dies ist jeweils die Differenz zwischen dem Maximum und Minimum der Koordinaten der zum Ball zugehörigen Pixel. Die Größe des Balls wird dann aus dem Durchschnitt der horizontalen und vertikalen Größe ermittelt.
 
@@ -108,13 +108,15 @@ Die Größe des Balls wird zunächst separat in horizontaler und vertikaler Ausr
 Das Anfahren des Balls beruht ebenfalls auf der in Unterabschnitt \ref{subsection:locateBall} vorgestellten Detektion. Diese liefert Größe und Position des Balls im Kamerabild. Bei einer initialen Detektion wird primär auf die festgestellte Größe des Balls Bezug genommen. Ist der Ball zu groß, wird von ihm zurückgewichen und das Anfahren des Balls gilt als erfolgreich.
 
 Ist im anderen Fall der Ball nicht zu nah, so wird in einem iterativen Vorgang der Abstand zum Ball verringert und währenddessen die Trajektorie korrigiert, sodass der Ball sich in der Mitte des Kamerabilds befindet. Die Rotations- und Vorwärtsgeschwindigkeit sind lineare Funktionen der Abweichung des Balls von der Mitte des Kamerabildes beziehungsweise der Größe des Balls.
+Je Größer der Ball im Bild, desto langsamer wird er angefahren.
+Desto größer der Abstand zwischen Bildmittelpunkt und Ballmittelpunkt, desto schneller wird rotiert.
 Wird während des Anfahren des Balls ein Hindernis erkannt, so wird die Trajektorie einfach nach rechts oder links versetzt.
 
 Wieso sich auf eine eigene Implementierung, statt auf die in der OpenCV enthaltenen Blobdetektion verlassen wurde, soll in diesem Absatz dargelegt werden.
 Der \textit{SimpleBlobDetector} der OpenCV-Programmbibliothek erkennt häufig im Blob des Balls mehrere kleine Blobs. Dies ist besonders problematisch, wenn sich der AMiRo nah am Ball befindet (vgl. \ref{fig:moveToBall-close}).
 Durch Anpassung der Parameter kann der Blobdetektor so konfiguriert werden, dass kleine Blobs miteinander verschmolzen werden.
 Gleichzeitig verwirft er auch Blobs mit zu geringer Größe. Da der Ball und seine Größe zuverlässig sowohl bei großer Entfernung (kleiner Blob, siehe \ref{fig:moveToBall-far}) und geringer Entfernung (großer Blob, siehe \ref{fig:moveToBall-close}) erkannt werden müssen, wurde eine eigene Blobdetektion implementiert. Diese verfügt über das Vorwissen, dass nur ein Blob existiert. Ein weiterer Vorteil ist, dass sie aufgrund geringerer Komplexität und Flexibilität performanter arbeitet. Dies ist besonders während des Anfahren des Balls wichtig, da sonst Kamerabild und Realität zunehmend divergieren.
-Ein weiterer, jedoch nicht getesteter, Ansatz ist, dass Bild zu erodieren und abermals zu dilatieren. Diese morphologische Operation, genannt \textit{Closing}, schließt Lücken im Vordergrund. Diese Operationen sind jedoch aufwendig und würden ebenfalls zu Problemen beim Anfahren des Balls führen.
+Ein weiterer, jedoch nicht getesteter, Ansatz ist, dass Bild zu erodieren und abermals zu dilatieren. Diese morphologische Operation, genannt \textit{Closing}, schließt Lücken im Vordergrund. Diese Operationen sind jedoch aufwendig und würden ebenfalls zu Verzögerungen beim Anfahren des Balls führen.
 
 \begin{figure}
 	\subfigure[Weit entfernter Ball]{\includegraphics[width=0.45\textwidth]{moveToBall-far.png}\label{fig:moveToBall-far}} 

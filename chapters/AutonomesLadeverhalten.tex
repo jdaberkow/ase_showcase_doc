@@ -133,27 +133,18 @@ Sollte ein Zustand nicht erfolgreich ausgeführt werden können, so gibt es defi
 \end{figure}
 
 \section[Einparken in der Ladestation]{Einparken in der Ladestation\hfill {\normalsize J.E.}}\label{kap:einparken_ladestation} %TODO: Julian E.
-Dem Anfahren der Ladestation der Ladestation folgt das Einparken. Dieser Vorgang ist auf dem DiWheelDrive-Mikrocontroller implementiert, um eine Unabhängigkeit von optionalen Komponenten, wie dem Cognition-Board des AMiRo, herzustellen. Das Ziel des Einparkens in die Ladestation ist es, dass sich der AMiRo bündig in der ``Bucht'' der Ladestation (siehe Abb. \ref{fig:einparken}) befindet. Am Ende dieses Vorgangs ist der AMiRo so ausgerichtet, dass er der Ladestation zugewandt ist.
+Auf das Anfahren der Ladestation folgt das Einparken. Dieser Vorgang ist auf dem DiWheelDrive-Mikrocontroller implementiert, um eine Unabhängigkeit von optionalen Komponenten, wie dem Cognition-Board des AMiRo, herzustellen. Das Ziel des Einparkens in die Ladestation ist es, dass sich der AMiRo bündig in der ``Bucht'' der Ladestation (siehe Abb. \ref{fig:einparken}) befindet. Am Ende dieses Vorgangs ist der AMiRo so ausgerichtet, dass er der Ladestation zugewandt ist.
 
 \subsection[Vermessung des Magnetometers]{Vermessung des Magnetometers\hfill {\normalsize J.E.}}
 Im Rahmen dieses Projektes wurde das Magnetometer des AMiRo untersucht, um festzustellen, ob es zum Detektieren der Ladestation und anschließendem Einparken geeignet ist.
 Bei dem Magnetometer handelt es ich um das HMC5883L-Board von Honeywell.
-Die Messreihen wurden wie folgt angefertigt. Der AMiRo wurde mit der Vorderseite nach Norden ausgerichtet. Dies definieren wir als $0^\circ$. Nun beginnt der AMiRo eine Rotation in positiver Richtung. In etwa $10^\circ$-Abständen werden die Sonsordaten des Magnetometers erfasst und ausgegeben. Das Magnetometer verfügt über drei Achsen. Die magnetische Flussdichte entlang der Achsen ist über eine Schnittstelle des DiWheelDrive in $\mu$Gauss abrufbar. Der Verlauf einer solchen Messung ist in \ref{fig:no-station} zu sehen.
-Grafik \ref{fig:station-2-90} zeigt die Messdaten für die Situation, in der sich die Ladestation etwa zwei Zentimeter und $90^\circ$ von der Ausgangsposition des AMiRos befindet.
+Die Messreihen wurden wie folgt angefertigt. Der AMiRo wird mit der Vorderseite nach Norden ausgerichtet. Diese Position definieren wir als $0^\circ$. Nun beginnt der AMiRo eine Rotation in positiver Richtung. In etwa $10^\circ$-Abständen werden die Sonsordaten des Magnetometers erfasst und ausgegeben. Das Magnetometer verfügt über drei Achsen. Die magnetische Flussdichte entlang dieser Achsen ist über eine Schnittstelle des DiWheelDrive in $\mu$Gauss abrufbar. Der Verlauf einer solchen Messung ist in \ref{fig:no-station} zu sehen.
+Grafik \ref{fig:station-2-90} zeigt die Messdaten für die Situation, in der sich die Ladestation etwa zwei Zentimeter vom AMiRo entfernt und $90^\circ$ von der Ausgangsposition des AMiRos befindet.
 Abbildung \ref{fig:station-0-90} stellt dar, dass es zu maximal negativen Messdaten kommen kann, wenn sich der AMiRo direkt an der Station befindet. Dies kann umgangen werden, indem maximal negative Messwerte als maximal positive angesehen werden.
 
-Solche Messreihen wurden für verschiedene Abstände und Positionen der Ladestation aufgenommen. Das Resultat dieser Messungen ist, dass die Ladestation nur innerhalb von ein bis zwei Zentimetern vom AMiRo erkennbar ist. Außerdem kann sie nur erkannt werden, wenn der AMiRo ihr zugewandt ist. Dies erklärt sich dadurch, dass das Magnetometer im vorderen Bereich des AMiRo verbaut ist. Ein Erkennen der Station im Vorbeifahren ist also nicht möglich.
+Solche Messreihen wurden für verschiedene Abstände und Positionen der Ladestation aufgenommen. Das Resultat dieser Messungen ist, dass die Ladestation nur innerhalb von ein bis zwei Zentimetern vom AMiRo erkennbar ist. Außerdem kann sie nur erkannt werden, wenn der AMiRo ihr zugewandt ist. Dies erklärt sich dadurch, dass das Magnetometer im vorderen Bereich des AMiRo verbaut ist. Ein Erkennen der Station im Vorbeifahren ist folglich nicht möglich.
 
 Die Implementierung des Einparkens beschränkt sich auf die X-Achse des Magnetometers. Diese liefert einen maximalen Ausschlag, wenn der AMiRo der Ladestation zugewandt ist (siehe \ref{fig:station-2-90}). Die Z-Achse liefert lediglich einen kleinen Ausschlag. Die magnetische Flussdichte der Y-Achse verläuft im Umfeld des Winkels der Ladestation von einem maximal positiven Wert zu einem maximal negativen Wert. Dieser Nulldurchgang ist schwieriger zu detektieren.
-
-% Negative Werte
-% herausrechnen -> Tagesabhängig
-% Dies ist bedingt durch die ... mit Hilfe des Magnetometers. Deswegen AMiRo vorfährts einparken
-%TODO: Magnetometer und Station genauer beschreiben, Bezug auf x-Achse
-% Detektion nicht im vorbeifahren möglich
-% Magnet vorne, auch nur vorne mag Flussdichte messbar
-% Kurvenverlauf für Achsen
-%TODO: Magnetometer-Typ
 
 \begin{figure}
 	\subfigure[]{\includegraphics[width=0.7\textwidth]{no-station.pdf}\label{fig:no-station}}
