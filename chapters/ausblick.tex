@@ -2,6 +2,12 @@
 
 Ausblick Ladeverhalten...
 
+Die Lokalisation der nächsten Kante über die Landmarken sollte in weiteren Tests untersucht werden. Hierbei muss abgeschätzt werden, ob die Positionsabschätzung in diesem Rahmen ausreicht oder zu ungenau wird. Eine starke Abweichung kann die Folge eines qualitativ schlechten Kamerabildes sein. Daraus entsteht eine minimal ungenau Distanz, die wiederum in der Winkelberechnung und der konkreten Positionsberechnung einen sehr hohen Einfluss hat. Des weiteren sind für jegliche Operationen mit der OpenCV Blobdetektion die Parameter eventuell anzupassen, da sie momentan für die Lichtumgebung der Telewerkbank angepasst sind. Die OpenCV Blobdetektion selber liefert lediglich für quadratische Formen einen akzeptablen Radius und Mittelpunkt (benötigt für die Berechnung der relativen Torpfostenmaße in Bildkoordinaten). Für nicht quadratische Formen muss daher eingehend ein anderes Verfahren verwendet werden.
+
+Die momentane Nutzung der Kamera hat eine sehr starke Latenz von bis zu drei Sekunden. Dadurch wird die Objekterkennung über das Kamerabild während einer Bewegung erheblich beeinträchtigt. Aus diesem Grund muss die interne Verarbeitung der Kamera beziehungsweise des Kamerabildes optimiert werden (Linux-Treiber). 
+
+Ein weiterer Punkt ist die Erstellung eines Sensormodelles für jeden eingesetzten AMiRO hinsichtlich der Infrarotsensoren, da nicht jeder Sensor bei gleichen Bedingungen die exakt selben Werte zurückliefert. Dadurch, und mit angepassten Parametern, lassen sich weichere Bewegungen während der Kantenverfolgung und dem Anfahren über die Infrarotbodensensoren erzielen.
+
 Ausblick Szenario Koordination...
 
 Ausblick RSB und Spread Kommunikation...
