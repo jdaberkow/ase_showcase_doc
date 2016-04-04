@@ -1,20 +1,14 @@
 \chapter{Ausblick} \label{kap:ausblick}
 
-Ausblick Ladeverhalten...
-
 Die Lokalisation der nächsten Kante über die Landmarken sollte in weiteren Tests untersucht werden. Hierbei muss abgeschätzt werden, ob die Positionsabschätzung in diesem Rahmen ausreicht oder zu ungenau wird. Eine starke Abweichung kann die Folge eines qualitativ schlechten Kamerabildes sein. Daraus entsteht eine minimal ungenau Distanz, die wiederum in der Winkelberechnung und der konkreten Positionsberechnung einen sehr hohen Einfluss hat. Des weiteren sind für jegliche Operationen mit der OpenCV Blobdetektion die Parameter eventuell anzupassen, da sie momentan für die Lichtumgebung der Telewerkbank angepasst sind. Die OpenCV Blobdetektion selber liefert lediglich für quadratische Formen einen akzeptablen Radius und Mittelpunkt (benötigt für die Berechnung der relativen Torpfostenmaße in Bildkoordinaten). Für nicht quadratische Formen muss daher eingehend ein anderes Verfahren verwendet werden.
 
-Die momentane Nutzung der Kamera hat eine sehr starke Latenz von bis zu drei Sekunden. Dadurch wird die Objekterkennung über das Kamerabild während einer Bewegung erheblich beeinträchtigt. Aus diesem Grund muss die interne Verarbeitung der Kamera beziehungsweise des Kamerabildes optimiert werden (Linux-Treiber). 
+Die momentane Nutzung der Kamera hat eine sehr starke Latenz von bis zu drei Sekunden. Dadurch wird die Objekterkennung über das Kamerabild während einer Bewegung erheblich beeinträchtigt. Aus diesem Grund bietet die interne Verarbeitung der Kamera beziehungsweise des Kamerabildes Optimierungspotential. % (Linux-Treiber). 
 
 Ein weiterer Punkt ist die Erstellung eines Sensormodelles für jeden eingesetzten AMiRO hinsichtlich der Infrarotsensoren, da nicht jeder Sensor bei gleichen Bedingungen die exakt selben Werte zurückliefert. Dadurch, und mit angepassten Parametern, lassen sich weichere Bewegungen während der Kantenverfolgung und dem Anfahren über die Infrarotbodensensoren erzielen.
 
-Ausblick Szenario Koordination...
-
-Für eine flexiblere und umfangreichere Szenariogestaltung sollte die Implementierung einer Verhaltenshierarchie erfolgen. Wichtig ist hierbei vor allem die Vermeidung von Redundanzen der einzelnen Verhaltenselemente, das heißt beispielsweise, dass eine Verhaltenslogik an der Basis der Hierarchie für die Hindernisvermeidung sorgt. Dieses Merkmal muss dann nicht mehrfach für verschiedene komplexere Verhaltensmuster implementiert werden.
+Für eine flexiblere und umfangreichere Szenariogestaltung sollte die Implementierung einer Verhaltenshierarchie erfolgen. Wichtig ist hierbei vor allem die Vermeidung von Redundanzen der einzelnen Verhaltenselemente, das heißt beispielsweise, dass eine Verhaltenslogik an der Basis der Hierarchie für die Hindernisvermeidung sorgt. Dieses Merkmal muss folglich nicht mehrfach für verschiedene komplexere Verhaltensmuster implementiert werden.
 
 Die State-Machine könnte ggf. auch abstrahiert werden und in einer Beschreibungssprache wie SCXML beschrieben werden. Damit wird das Verhalten nochmal speziell von der sonstigen Logik getrennt und kann abstrakter beschrieben werden. Denkbar wäre hierfür auch der Einsatz der im CoR-Lab entwickelten SCXML Engine (https://code.cor-lab.org/projects/rsb-scxml-engine). Einziger Nachteil wäre die Java-Basis auf der dieses Framework aufbaut.
-
-Ausblick RSB und Spread Kommunikation...
 
 Auch im Bereich der Kommunikation ist Optimierungsbedarf vorhanden: Die Strings die zur Verständigung zwischen den AMiRos und dem Host versendet werden sind schlecht wartbar und sollten ggf. ausgelagert und durch eine Kapselung in spezifische RST Datentypen besser abgesichert werden.
 
@@ -22,7 +16,7 @@ Die Spread Konfiguration sollte überprüft werden, damit eine ständige Verbind
 
 Außerdem könnte das Kommunikationsdesign überdacht werden, dass derzeit noch viele Nachrichten allein über den Scope abstrahiert, wobei der Inhalt der eigentlichen Nachricht oft irrelevant ist. 
 
-Ausblick Realisierung der Spielelemente...
+Um die Schussposition während des Fußballszenarios genauer zu bestimmen, sollte der Abstand zum Tormittelpunkt, sowie zum Mittelpunkt des Balles, mit in die Berechnung einbezogen werden. Dies wurde bisher aufgrund der oben beschriebenen Probleme mit der Verzögerung der Kamerabilder vernachlässigt, wodurch ein Nachbessern der Position nötig ist. 
 
 Das externe Spieltracking muss in Zukunft weiteren Tests hinsichtlich unterschiedlicher Lichtverhältnisse und Kamerapositionen unterzogen werden. Aktuelle Ergebnisse sind lediglich unter den Bedingungen der Telewerkbank entstanden, was dazu führt, dass die Parameter der Markerdetektion sowie der Blobdetektion an anderen Orten möglicherweise einer Feinjustierung unterzogen werden müssen.
-Ferner ist die aktuelle grafische Benutzeroberfläche mithilfe der OpenCV Bibliothek realisiert, welche in ihrem Funktionsumfang sehr eingeschränkt ist. Denkbar wäre an dieser Stelle die Umsetzung der Oberfläche mithilfe des Qt Frameworks, welches die Integration zusätzlicher Features, sowie die Einführung klassicher Interaktion mit Maus und Tastatur erheblich vereinfachen würde.
+Ferner ist die aktuelle grafische Benutzeroberfläche mithilfe der OpenCV Bibliothek realisiert, welche in ihrem Funktionsumfang sehr eingeschränkt ist. Denkbar wäre an dieser Stelle die Umsetzung der Oberfläche mithilfe des Qt Frameworks, welches die Integration zusätzlicher Features, sowie die Einführung klassischer Interaktion mit Maus und Tastatur erheblich vereinfachen würde.
